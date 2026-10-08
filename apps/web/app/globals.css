@@ -42,3 +42,8 @@ fieldset:disabled { opacity: .7; }
 .queue { margin-top: 48px; }
 .upload-form + button { margin-top: 16px; }
 .search-form { display: grid; gap: 12px; }
+.song-player { display: grid; gap: 12px; margin: 20px 0; }
+.song-player button { justify-self: start; }
+.song-player audio { width: 100%; min-width: 0; }
+.section-heading { flex-wrap: wrap; }
+button:disabled { cursor: wait; opacity: .7; }

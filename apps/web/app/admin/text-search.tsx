@@ -1,4 +1,5 @@
 "use client";
+import { SongPlayer } from "../song-player";
 import { useState, type FormEvent } from "react";
 import { searchSongs, type SongMatch } from "./indexing-actions";
 
@@ -30,6 +31,7 @@ export function TextSearch() {
       : <ul className="catalog">{results.map(song => <li className="panel" key={song.id}>
         <span className="eyebrow">{song.visibility}</span><h3>{song.title}</h3>
         {song.description && <p>{song.description}</p>}
+        <SongPlayer songId={song.id} title={song.title} />
       </li>)}</ul>}</div>}
   </section>;
 }

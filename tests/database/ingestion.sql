@@ -76,16 +76,47 @@ select public.complete_song_ingestion('20000000-0000-0000-0000-000000000002');
 
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
 select pg_temp.assert_true((select count(*)=0 from public.song_ingestion_jobs),'another administrator cannot see owner-only ingestion evidence');
-select pg_temp.assert_true((select count(*)=0 from storage.objects),'another administrator cannot read private audio');
+select pg_temp.assert_true((select count(*)=1 from storage.objects),'another administrator reads collective audio but not private audio');
 select pg_temp.expect_failure($q$select public.complete_song_ingestion('20000000-0000-0000-0000-000000000001')$q$,'42501','another administrator cannot finalize another owner upload');
 
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-000000000003';
 select pg_temp.assert_true((select count(*)=0 from public.song_ingestion_jobs),'ordinary user cannot read ingestion evidence');
-select pg_temp.assert_true((select count(*)=0 from storage.objects),'ordinary user cannot read storage objects');
+select pg_temp.assert_true((select count(*)=1 from storage.objects),'ordinary listener can read collective audio only');
 select pg_temp.assert_true((select count(*)=1 from public.songs),'ordinary user sees only completed collective song');
 select pg_temp.expect_failure($q$select public.complete_song_ingestion('20000000-0000-0000-0000-000000000001')$q$,'42501','ordinary user cannot finalize upload');
 select pg_temp.expect_failure($q$insert into storage.objects(bucket_id,name) values('song-assets','unauthorized.mp3')$q$,'42501','ordinary user cannot upload');
 
+select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',now(),'{"title":"Hacked"}')$q$,'42501','ordinary listener cannot edit');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
+select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',now(),'{"title":"Hacked"}')$q$,'42501','other administrator cannot edit');
+reset role;
+insert into public.song_embeddings(song_id,modality,model_name,embedding)
+values('20000000-0000-0000-0000-000000000001','lyrics','openai/text-embedding-3-small/1536/v1',
+ (array[1::real] || array_fill(0::real,array[1535]))::extensions.vector);
+update public.song_ingestion_jobs set status='searchable' where song_id='20000000-0000-0000-0000-000000000001';
+set local role authenticated;
+set local request.jwt.claim.sub = '851d2e86-8cc5-4a68-847a-5cd93070ac77';
+select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',now(),'{"storage_path":"bad"}')$q$,'22023','edit cannot change storage identity');
+select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',now(),'{"collective_consent":false}')$q$,'22023','edit requires collective consent');
+select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',now(),'{"genre":[4]}')$q$,'22023','edit rejects nonstring tags');
+select public.update_ingested_song('20000000-0000-0000-0000-000000000001',
+ (select updated_at from public.song_ingestion_jobs where song_id='20000000-0000-0000-0000-000000000001'),
+ '{"title":"Updated song","lyrics":"New words","visibility":"private"}');
+select pg_temp.assert_true((select title='Updated song' and lyrics='New words' and visibility='private' from public.songs where id='20000000-0000-0000-0000-000000000001'),'edit updates catalog');
+select pg_temp.assert_true((select submission->>'lyrics'='New words' and status='queued' and lease_token is null from public.song_ingestion_jobs where song_id='20000000-0000-0000-0000-000000000001'),'edit updates indexing input and requeues');
+select pg_temp.assert_true((select count(*)=0 from public.song_embeddings),'edit removes stale text vectors');
+select pg_temp.assert_true((select count(*)=2 from public.song_assets),'edit preserves recordings');
+select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',now(),'{"title":"Stale"}')$q$,'40001','stale editor rejected');
+reset role;
+update public.song_ingestion_jobs set status='processing',lease_token=gen_random_uuid(),lease_until=now()+interval '3 minutes' where song_id='20000000-0000-0000-0000-000000000001';
+set local role authenticated;
+set local request.jwt.claim.sub = '851d2e86-8cc5-4a68-847a-5cd93070ac77';
+select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',(select updated_at from public.song_ingestion_jobs where song_id='20000000-0000-0000-0000-000000000001'),'{"title":"Busy"}')$q$,'55000','active worker blocks edit');
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-000000000003';
+select pg_temp.assert_true((select count(*)=0 from storage.objects),'making collective song private revokes listener storage access');
+set local role anon;
+select pg_temp.assert_true((select count(*)=0 from storage.objects),'anonymous playback denied');
+select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',now(),'{"title":"Anonymous"}')$q$,'42501','anonymous edits denied');
 reset role;
 select pg_temp.assert_true((select not public from storage.buckets where id='song-assets'),'audio bucket remains private');
 rollback;

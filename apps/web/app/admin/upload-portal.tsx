@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { SongPlayer } from "../song-player";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -133,9 +135,9 @@ export function UploadPortal({ jobs }: { jobs: UploadJob[] }) {
             <label htmlFor="provenance">Provenance and rights evidence · administrator-only</label><textarea id="provenance" name="provenance" placeholder="Creator, source, creation date, and the permission or license covering this song." maxLength={2000} rows={4} required />
             <label htmlFor="visibility">Library visibility</label><select id="visibility" value={visibility} onChange={e => setVisibility(e.target.value)}>
               <option value="collective">Collective library</option><option value="private">Private library</option></select>
-            <p>Collective songs share their lyrics, descriptions, goals, and metadata with signed-in users. Remove personal information before sharing. Private songs remain limited to their owner.</p>
+            <p>Collective songs share their audio, lyrics, descriptions, goals, and metadata with signed-in users. Remove personal information before sharing. Private songs remain limited to their owner.</p>
             <label className="check"><input name="rights_confirmed" type="checkbox" required />I confirm I have permission to upload and store this song and its lyrics.</label>
-            {visibility === "collective" && <label className="check"><input name="collective_consent" type="checkbox" required />I approve sharing the song’s lyrics and musical context in the collective library.</label>}
+            {visibility === "collective" && <label className="check"><input name="collective_consent" type="checkbox" required />I approve sharing the song’s audio, lyrics, and musical context in the collective library.</label>}
             <label className="check"><input name="reuse_allowed" type="checkbox" />I also authorize this song’s content as context for future compositions.</label>
             <p>Model training is not authorized by this upload. Industry Integration remains a separate future workflow.</p>
           </>}
@@ -151,6 +153,7 @@ export function UploadPortal({ jobs }: { jobs: UploadJob[] }) {
       {feedbackArea === "queue" && error && <p role="alert" className="notice">{error}</p>}
       {!jobs.length ? <p>Your first upload will appear here.</p> : <ul className="catalog">{jobs.map(job => <li key={job.song_id} className="panel">
         <span className="eyebrow">{statusLabels[job.status]}</span><h3>{job.title}</h3>
+        {job.status !== "awaiting_upload" && <><SongPlayer songId={job.song_id} title={job.title} /><Link href={`/admin/songs/${job.song_id}`}>Edit song</Link></>}
         {job.status === "awaiting_upload" && <button type="button" className="secondary" disabled={busy} onClick={() => resume(job)}>Resume this upload</button>}
         {["queued","failed","processing"].includes(job.status) && <button type="button" className="secondary" disabled={busy} onClick={() => index(job)}>
           {job.status === "queued" ? "Index song" : "Retry indexing"}</button>}

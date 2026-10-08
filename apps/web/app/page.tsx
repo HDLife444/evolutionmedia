@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { signIn, signOut } from "./actions";
 import Link from "next/link";
+import { SongPlayer } from "./song-player";
 
 const notices: Record<string, string> = {
   "missing-credentials": "Enter your email and password.",
@@ -16,7 +17,6 @@ export default async function Page({ searchParams }: {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   const authUnavailable = authError && authError.name !== "AuthSessionMissingError";
-  const { data: administrator } = user ? await supabase.rpc("is_song_administrator") : { data: false };
 
   return (
     <main>
@@ -34,7 +34,7 @@ export default async function Page({ searchParams }: {
       {user ? <>
         <div className="section-heading">
           <h2>Your library</h2>
-          {administrator === true && <Link className="admin-link" href="/admin">Upload songs</Link>}
+          <Link className="admin-link" href="/admin">Admin</Link>
           <form action={signOut}><button className="secondary" type="submit">Sign out</button></form>
         </div>
         <SongCatalog />
@@ -74,5 +74,6 @@ async function SongCatalog() {
     <h3>{song.title}</h3>
     {song.description && <p>{song.description}</p>}
     {song.genre?.length > 0 && <p className="tags">{song.genre.join(" · ")}</p>}
+    <SongPlayer songId={song.id} title={song.title} />
   </li>)}</ul>;
 }

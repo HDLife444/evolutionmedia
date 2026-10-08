@@ -21,7 +21,7 @@ The six original tables already exist. Do not rerun the initial creation script.
    `851d2e86-8cc5-4a68-847a-5cd93070ac77`. The assignment can safely be rerun.
    That user must exist in this project's Authentication users list.
 4. Wait for Vercel's deployment of the new GitHub commit to become Ready.
-5. Sign in with that user and open `/admin`, or choose **Upload songs** in the
+5. Sign in with that user and open `/admin`, or choose **Admin** in the
    library. No additional app environment variables or service-role key are
    needed for uploading.
 

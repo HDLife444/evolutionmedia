@@ -91,3 +91,5 @@ storage and access; they are not real musical or semantic embeddings.
 
 Supabase authentication is simulated for these tests. Hosted authentication,
 Storage, and application behavior must be tested when those components exist.
+
+Song editing and authenticated audio playback: see [activation instructions](docs/song-editing-playback.md).
