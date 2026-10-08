@@ -23,8 +23,10 @@ The collective-access default must be disclosed and agreed to before upload.
 
 The supplied migration is retained unchanged. The repository includes an
 architecture record, a schema review, local database tests, and a Next.js web
-app with Supabase authentication and an authorized song catalog. Ingestion,
-embedding generation, and semantic retrieval are not yet implemented.
+app with Supabase authentication, an authorized song catalog, and an administrator
+upload portal with a durable ingestion queue. The upload portal requires its
+follow-up migration and administrator assignment. Embedding generation and
+semantic retrieval are not yet implemented.
 
 The Evolution Media Supabase project is `gzxsqsbgvgqxblnaiozj`. Its Auth endpoint
 and `songs` endpoint have been verified with the supplied publishable key. The
@@ -38,6 +40,7 @@ do not rerun the creation migration against the existing tables.
 - [Next implementation steps](docs/next-steps.md)
 - [Web app setup and Supabase connection](docs/web-setup.md)
 - [Vercel deployment and sign-in verification](docs/vercel-deployment.md)
+- [Activate the administrator upload portal](docs/admin-ingestion.md)
 
 ## Run the web app
 
@@ -58,6 +61,7 @@ with `NODE_USE_ENV_PROXY=1` so Node uses the platform's HTTPS proxy.
 ```sh
 npm run typecheck
 npm run test:auth
+npm run test:ingestion
 npm run build
 NODE_USE_ENV_PROXY=1 npm run check:connection
 ```

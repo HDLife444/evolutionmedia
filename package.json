@@ -10,6 +10,7 @@
     "typecheck": "npm run typecheck --workspace @evolution-media/web",
     "test:database": "bash tests/database/run.sh",
     "test:auth": "npm run test:auth --workspace @evolution-media/web",
+    "test:ingestion": "npm run test:ingestion --workspace @evolution-media/web",
     "check:connection": "node --env-file-if-exists=apps/web/.env.local scripts/check-supabase.mjs"
   }
 }

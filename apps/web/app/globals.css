@@ -29,3 +29,15 @@ input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid 
 .notice { border-left: 3px solid #efcba2; padding: 12px 20px; background: #332b22; }
 footer { color: #95a68e; font-size: 13px; margin-top: 64px; padding-top: 24px; border-top: 1px solid #354538; }
 @media (max-width: 540px) { main { padding: 24px 18px; } header { align-items: flex-start; flex-direction: column; } .intro { padding-top: 44px; } .panel { padding: 22px; } }
+a { color: #c7e4a5; }
+.admin-link { margin-left: auto; }
+.upload-form fieldset { padding: 0; border: 0; display: grid; gap: 12px; min-width: 0; }
+textarea, select { width: 100%; background: #101813; border: 1px solid #66785e; border-radius: 8px; color: inherit; padding: 12px; font: inherit; }
+textarea:focus-visible, select:focus-visible { outline: 3px solid #d6f2b1; outline-offset: 4px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 20px; }
+.form-grid label { display: block; margin-bottom: 12px; }
+.check { display: flex; align-items: flex-start; gap: 12px; line-height: 1.5; }
+.check input { width: auto; margin-top: 4px; }
+fieldset:disabled { opacity: .7; }
+.queue { margin-top: 48px; }
+.upload-form + button { margin-top: 16px; }

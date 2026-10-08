@@ -32,12 +32,13 @@ policies and no application write policies.
 4. **Storage:** asset table policies do not secure Storage objects. Create a
    private bucket, owner-checked upload paths, and authorized download policies
    or short-lived URLs. No bucket is created by this migration.
-5. **Write authorization:** trusted service credentials bypass RLS. The backend
-   must enforce ownership, privacy entitlements, visibility changes, and audit
-   records. No upload endpoint or premium entitlement enforcement exists yet.
-6. **Ingestion durability:** add job/status tracking, idempotency, retry behavior,
-   and reconciliation so stored audio cannot be silently left unindexed.
-   Generation completion must include durable registration and indexing work.
+5. **Write authorization:** the follow-up admin ingestion migration adds narrow,
+   administrator-checked reservation and completion RPCs. Ordinary application
+   users still cannot write these tables. Premium entitlement enforcement and
+   a broader audit trail remain future work; no service key is used in the portal.
+6. **Ingestion durability:** the administrator portal reserves uploads and records
+   pending/queued states with idempotent completion. A worker, indexing retries,
+   abandoned-draft cleanup, and full reconciliation remain future work.
 7. **Lifecycle details:** updated_at has no update trigger; deleting an owner
    of a private song conflicts with the owner-required constraint; feedback
    is not constrained to one response per user/song. Decide intended behavior

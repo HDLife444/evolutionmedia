@@ -29,4 +29,5 @@ run_sql() {
 run_sql "$project_root/tests/database/bootstrap.sql"
 for migration in "$project_root"/supabase/migrations/*.sql; do run_sql "$migration"; done
 run_sql "$project_root/tests/database/permissions.sql"
+run_sql "$project_root/tests/database/ingestion.sql"
 echo 'Database migration and permission checks passed.'
