@@ -1,0 +1,31 @@
+:root { color-scheme: dark; font-family: Arial, Helvetica, sans-serif; background: #101813; color: #f0f4e9; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 1100px; margin: auto; padding: 32px 24px; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 28px; border-bottom: 1px solid #354538; }
+.brand { color: inherit; font-size: 22px; font-weight: 700; text-decoration: none; }
+.eyebrow { color: #b8ce96; font-size: 12px; letter-spacing: .13em; text-transform: uppercase; }
+.intro { max-width: 740px; padding: 64px 0 44px; }
+h1 { font-size: clamp(42px, 7vw, 78px); font-weight: 500; letter-spacing: -.055em; line-height: 1.05; margin: 20px 0; }
+h2 { font-size: 25px; font-weight: 500; margin-top: 0; }
+h3 { font-size: 21px; font-weight: 500; }
+p { color: #c3cdc0; line-height: 1.65; }
+.intro p { max-width: 580px; font-size: 18px; }
+.panel { padding: 28px; border: 1px solid #354538; border-radius: 16px; background: #18221b; }
+.login { max-width: 480px; }
+.login form { display: grid; gap: 12px; }
+label { font-size: 14px; margin-top: 8px; }
+input { width: 100%; background: #101813; border: 1px solid #66785e; border-radius: 8px; color: inherit; padding: 12px; font: inherit; }
+button { cursor: pointer; background: #c7e4a5; color: #19241a; border: 0; border-radius: 8px; padding: 12px 20px; font: inherit; font-weight: 600; }
+.login button { margin-top: 12px; }
+button:hover { background: #daefc4; }
+input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #d6f2b1; outline-offset: 4px; }
+.secondary { background: #2a392c; color: #f0f4e9; }
+.secondary:hover { background: #415344; }
+.section-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
+.section-heading h2 { margin: 0; }
+.catalog { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); list-style: none; padding: 0; gap: 18px; }
+.tags { color: #b8ce96; font-size: 14px; }
+.notice { border-left: 3px solid #efcba2; padding: 12px 20px; background: #332b22; }
+footer { color: #95a68e; font-size: 13px; margin-top: 64px; padding-top: 24px; border-top: 1px solid #354538; }
+@media (max-width: 540px) { main { padding: 24px 18px; } header { align-items: flex-start; flex-direction: column; } .intro { padding-top: 44px; } .panel { padding: 22px; } }
