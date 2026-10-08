@@ -26,7 +26,7 @@ export async function beginUpload(input: unknown): Promise<{ job?: UploadJob; er
   const supabase = await administratorClient();
   if (!supabase) return { error: "Sign in with an authorized administrator account." };
   const { song_id, ...submission } = input;
-  const { data, error } = await supabase.rpc("begin_song_ingestion", { p_song_id: song_id, p_submission: submission });
+  const { data, error } = await supabase.rpc("begin_song_ingestion", { p_song_id: song_id, p_submission: submission }).single<Record<string, unknown>>();
   if (error || !data) {
     console.error("Song registration failed:", error?.code);
     return { error: "We couldn’t register this upload. Please try again." };
@@ -38,7 +38,7 @@ export async function finishUpload(songId: string): Promise<{ job?: UploadJob; e
   if (!UUID_PATTERN.test(songId)) return { error: "Invalid upload identifier." };
   const supabase = await administratorClient();
   if (!supabase) return { error: "Sign in with an authorized administrator account." };
-  const { data, error } = await supabase.rpc("complete_song_ingestion", { p_song_id: songId });
+  const { data, error } = await supabase.rpc("complete_song_ingestion", { p_song_id: songId }).single<Record<string, unknown>>();
   if (error || !data) {
     console.error("Song upload completion failed:", error?.code);
     return { error: "The audio upload could not be confirmed. Resume with the same file to try again." };
