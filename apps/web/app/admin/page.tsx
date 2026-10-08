@@ -3,6 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import type { UploadJob } from "@/utils/ingestion";
 import { UploadPortal } from "./upload-portal";
+import { TextSearch } from "./text-search";
+
+export const maxDuration = 60;
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -30,7 +33,7 @@ export default async function AdminPage() {
       <p>Upload one song, preserve its story, and prepare it for Sound Vector.</p>
     </section>
     {unavailable ? <p role="alert" className="panel">Administrator access is unavailable. The upload portal may still need activation.</p>
-      : <UploadPortal jobs={jobs} />}
+      : <><UploadPortal jobs={jobs} /><TextSearch /></>}
     <footer><Link href="/">Back to your library</Link></footer>
   </main>;
 }

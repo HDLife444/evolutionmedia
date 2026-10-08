@@ -25,8 +25,9 @@ The supplied migration is retained unchanged. The repository includes an
 architecture record, a schema review, local database tests, and a Next.js web
 app with Supabase authentication, an authorized song catalog, and an administrator
 upload portal with a durable ingestion queue. The upload portal requires its
-follow-up migration and administrator assignment. Embedding generation and
-semantic retrieval are not yet implemented.
+follow-up migration and administrator assignment. Administrator text indexing
+and semantic search are implemented and require their own migration and a secure
+server-side embedding-provider key. Audio-similarity indexing is future work.
 
 The Evolution Media Supabase project is `gzxsqsbgvgqxblnaiozj`. Its Auth endpoint
 and `songs` endpoint have been verified with the supplied publishable key. The
@@ -41,6 +42,7 @@ do not rerun the creation migration against the existing tables.
 - [Web app setup and Supabase connection](docs/web-setup.md)
 - [Vercel deployment and sign-in verification](docs/vercel-deployment.md)
 - [Activate the administrator upload portal](docs/admin-ingestion.md)
+- [Activate text indexing and semantic search](docs/text-indexing.md)
 
 ## Run the web app
 

@@ -17,8 +17,9 @@ chosen by the owner for the initial code push.
 3. Apply migrations to the development project and rerun access checks with actual
    Supabase authentication and Storage. Keep service credentials server-side.
 4. Activate the implemented administrator upload portal and ingest one seed song.
-   Next add the embedding worker, indexing retries, and model-scoped,
-   permission-aware similarity search. Uploading alone does not create vectors.
+   Activate the implemented administrator text-indexing actions and model-scoped,
+   permission-aware similarity search using docs/text-indexing.md. Uploading alone
+   does not create vectors. Scheduled background processing remains future work.
 5. Extend the implemented web sign-in/catalog with upload and semantic search;
    then validate all 12 songs.
    Generation providers and Ask Life integration follow after the library works.

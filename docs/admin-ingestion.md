@@ -2,8 +2,9 @@
 
 This first ingestion release provides an administrator-only `/admin` upload page,
 private audio storage, rights/sharing confirmation, durable upload reservations,
-and a queue for later indexing. It does not create embeddings or provide semantic
-search yet. A successful upload is **Awaiting indexing**, not **Searchable**.
+and a durable indexing queue. A successful upload is **Awaiting indexing**, not
+**Searchable**. [Text indexing activation](text-indexing.md) adds the administrator
+Index song action and semantic search once its migration and credential are set.
 
 ## Activate in the Evolution Media database
 
@@ -71,12 +72,10 @@ abandoned drafts is a future administration feature.
 
 ## Next: indexing
 
-Choose and configure a text embedding provider/model and a trusted background
-worker. The original schema uses 1536-dimensional vectors; do not mix different
-models or audio vectors in that embedding space. The worker must atomically record
-model/version/modality, persist embeddings, and mark jobs searchable only after
-successful indexing. Add retries for failed worker jobs and a permission-aware
-retrieval endpoint. No paid embedding calls are made by this release.
+See [text indexing](text-indexing.md). The administrator-triggered processor uses
+1536-dimensional text vectors, leases, retries, and atomic status updates. It
+requires a server credential and incurs API usage only when indexing/search is
+requested. Do not mix models or audio vectors in that embedding space.
 
 ## Verification
 

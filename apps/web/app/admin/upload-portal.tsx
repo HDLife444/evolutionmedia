@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { detectAudioMime, MAX_AUDIO_BYTES, statusLabels, type SongSubmission, type UploadJob } from "@/utils/ingestion";
 import { beginUpload, finishUpload } from "./actions";
+import { indexSong } from "./indexing-actions";
 
 const storageKey = "evolution-media-pending-upload";
 function rememberUpload(songId: string | null) {
@@ -22,6 +23,7 @@ export function UploadPortal({ jobs }: { jobs: UploadJob[] }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [feedbackArea, setFeedbackArea] = useState<"upload" | "queue">("upload");
   const id = useRef<string | null>(null);
 
   useEffect(() => {
@@ -37,9 +39,22 @@ export function UploadPortal({ jobs }: { jobs: UploadJob[] }) {
     rememberUpload(job.song_id);
   }
 
+  async function index(job: UploadJob) {
+    if (busy) return;
+    setFeedbackArea("queue");
+    setBusy(true); setError(""); setMessage(`Indexing ${job.title}…`);
+    try {
+      const result = await indexSong(job.song_id);
+      if (result.error) { setMessage(""); setError(result.error); }
+      else setMessage(`${job.title} is indexed and ready for text search.`);
+    } catch { setMessage(""); setError("Indexing was interrupted. Refresh the queue and retry after three minutes."); }
+    finally { setBusy(false); router.refresh(); }
+  }
+
   async function upload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
+    setFeedbackArea("upload");
     const form = event.currentTarget;
     const values = new FormData(form);
     setBusy(true); setError(""); setMessage("Checking audio…");
@@ -89,7 +104,7 @@ export function UploadPortal({ jobs }: { jobs: UploadJob[] }) {
       if (!result.job) throw new Error(result.error ?? "Couldn’t confirm this upload.");
       rememberUpload(null);
       setPending(null); setFile(null); id.current = null; form.reset(); setVisibility("collective");
-      setMessage("Song uploaded. It is awaiting indexing and is not searchable yet.");
+      setMessage(result.job.status === "searchable" ? "Song is uploaded and indexed." : "Song uploaded. Select Index song in the queue to make it searchable.");
       router.refresh();
     } catch (reason) {
       setMessage(""); setError(reason instanceof Error ? reason.message : "Upload failed. Please try again.");
@@ -99,9 +114,9 @@ export function UploadPortal({ jobs }: { jobs: UploadJob[] }) {
   return <>
     <section className="panel">
       <h2>{pending ? `Resume: ${pending.title}` : "Upload a foundational song"}</h2>
-      <p>Audio stays in private storage. Provenance stays with your administrator record. Indexing will begin after the embedding worker is configured.</p>
-      {message && <p role="status" className="notice">{message}</p>}
-      {error && <p role="alert" className="notice">{error}</p>}
+      <p>Audio stays in private storage. Provenance stays with your administrator record. After upload, select Index song in the queue to prepare text search.</p>
+      {feedbackArea === "upload" && message && <p role="status" className="notice">{message}</p>}
+      {feedbackArea === "upload" && error && <p role="alert" className="notice">{error}</p>}
       <form onSubmit={upload} className="upload-form">
         <fieldset disabled={busy}>
           <label htmlFor="audio">Audio file · MP3, WAV, or FLAC · maximum 50 MB</label>
@@ -132,9 +147,13 @@ export function UploadPortal({ jobs }: { jobs: UploadJob[] }) {
       }}>Start another song · keep this upload pending</button>}
     </section>
     <section className="queue"><h2>Ingestion queue</h2>
+      {feedbackArea === "queue" && message && <p role="status" className="notice">{message}</p>}
+      {feedbackArea === "queue" && error && <p role="alert" className="notice">{error}</p>}
       {!jobs.length ? <p>Your first upload will appear here.</p> : <ul className="catalog">{jobs.map(job => <li key={job.song_id} className="panel">
         <span className="eyebrow">{statusLabels[job.status]}</span><h3>{job.title}</h3>
         {job.status === "awaiting_upload" && <button type="button" className="secondary" disabled={busy} onClick={() => resume(job)}>Resume this upload</button>}
+        {["queued","failed","processing"].includes(job.status) && <button type="button" className="secondary" disabled={busy} onClick={() => index(job)}>
+          {job.status === "queued" ? "Index song" : "Retry indexing"}</button>}
       </li>)}</ul>}
     </section>
   </>;
