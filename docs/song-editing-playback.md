@@ -19,10 +19,10 @@ Audio replacement is not included in this release.
 
 **Play** and the native audio controls appear in the library, administrator queue,
 song editor, and search results. One song plays at a time. Files stay in the private
-song-assets bucket. The audio endpoint validates a signed-in session, looks up the
-asset under RLS, and obtains a 60-second signed URL with the listener's Supabase
-client. Owners can listen to private songs; authenticated users can listen to
-collective songs. No service key or public bucket is used. Responses are no-store.
+song-assets bucket. The audio endpoint looks up the asset under RLS and obtains a 60-second signed
+URL with the listener’s Supabase client. Owners can listen to private songs;
+anonymous and authenticated users can listen to collective songs after applying
+the public collective migration. No service key or public bucket is used. Responses are no-store.
 Existing signed URLs may work until expiry after visibility changes. Already
 received audio cannot be revoked. The Play button refreshes access; if a seek or
 native-control request fails after expiry, select Play again. Browser format
@@ -30,6 +30,6 @@ support varies; MP3 is the most portable choice.
 
 `npm run test:database` checks owner-only editing, metadata validation, optimistic
 concurrency, stale vector removal, active worker protection, preserved recordings,
-collective playback visibility, privacy changes, and anonymous denial using a real
+collective playback visibility, privacy changes, and anonymous private-song denial using a real
 local PostgreSQL database with Supabase schema stand-ins. Actual hosted storage
 streaming and browser playback require the migration and a signed-in session.

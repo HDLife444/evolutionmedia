@@ -52,8 +52,8 @@ proxy. The Supabase project hostname must also be allowed by environment setting
    database. It creates six tables and their read policies; it is not designed
    to be blindly rerun after a partial application.
 3. Run `NODE_USE_ENV_PROXY=1 npm run check:connection`. The check verifies Auth,
-   the presence of the `songs` endpoint, and an empty anonymous result. An empty
-   catalog does not by itself prove RLS; the local two-user tests and hosted
+   the presence of the `songs` endpoint, and that anonymous results contain only
+   collective songs. An empty catalog does not prove RLS or public access; the local two-user tests and hosted
    authenticated checks are separate.
 4. In Supabase Authentication, create a confirmed development test user through
    the dashboard. Sign in through the app; verify that the empty catalog appears.

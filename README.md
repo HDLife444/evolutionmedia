@@ -31,7 +31,9 @@ server-side embedding-provider key. Audio-similarity indexing is future work.
 
 The Evolution Media Supabase project is `gzxsqsbgvgqxblnaiozj`. Its Auth endpoint
 and `songs` endpoint have been verified with the supplied publishable key. The
-latest live connection check passed and returned no songs to an anonymous caller.
+earlier live connection check passed before public collective access was introduced.
+The public collective migration now permits anonymous discovery and audio access
+for collective songs only.
 The user's SQL Editor results show all six expected tables. Exact remote schema,
 RLS policies, authenticated visibility, and Storage access still need validation;
 do not rerun the creation migration against the existing tables.
@@ -43,6 +45,7 @@ do not rerun the creation migration against the existing tables.
 - [Vercel deployment and sign-in verification](docs/vercel-deployment.md)
 - [Activate the administrator upload portal](docs/admin-ingestion.md)
 - [Activate text indexing and semantic search](docs/text-indexing.md)
+- [Activate the public collective landing page](docs/public-collective.md)
 
 ## Run the web app
 
@@ -70,7 +73,7 @@ NODE_USE_ENV_PROXY=1 npm run check:connection
 
 The app uses `proxy.ts` (the Next.js 16 convention) to validate and refresh
 sessions, propagating cookie updates to both server renders and the browser.
-The catalog queries `songs` with the signed-in user's identity and respects
+The catalog queries `songs` with the visitor’s anonymous or signed-in identity and respects
 database RLS. It does not use the unrelated `todos` quickstart example or any
 service-role credential.
 

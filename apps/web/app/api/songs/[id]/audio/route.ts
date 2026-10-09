@@ -6,9 +6,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const headers = { "Cache-Control": "private, no-store" };
   if (!UUID_PATTERN.test(id)) return Response.json({ error: "Song not found." }, { status: 404, headers });
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return Response.json({ error: "Sign in to listen." }, { status: 401, headers });
-  // Both the asset lookup and URL creation use the listener's session and RLS.
+  // Anonymous visitors can listen to collective audio under RLS. Signed-in
+  // listeners additionally have access to their own private songs.
   const { data: asset } = await supabase.from("song_assets").select("storage_path")
     .eq("song_id", id).eq("asset_type", "audio").order("created_at", { ascending: false }).limit(1).maybeSingle();
   if (!asset) return Response.json({ error: "Audio is unavailable for this song." }, { status: 404, headers });

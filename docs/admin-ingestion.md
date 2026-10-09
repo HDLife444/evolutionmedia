@@ -35,8 +35,9 @@ Choose an MP3, WAV, or FLAC up to 50 MiB. Supply its title, lyrics when availabl
 development goal, emotional progression, genres/moods, source provider, and
 provenance/rights evidence. Provenance stays in the owner-only ingestion record.
 
-Collective visibility requires explicit consent to expose lyrics, descriptions,
-goals, and musical metadata to signed-in users. Remove personal information
+Collective visibility requires explicit consent to publish audio, lyrics,
+descriptions, goals, and musical metadata for everyone, including visitors
+without an account. Apply the public collective migration to activate this access. Remove personal information
 before sharing. Private uploads remain private. Permission to use the content
 for future composition context is a separate checkbox. Training remains false;
 Industry Integration is not enabled by uploading.

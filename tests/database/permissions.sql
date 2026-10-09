@@ -84,10 +84,28 @@ select pg_temp.assert_count('select count(*) from public.song_feedback', 1, 'B f
 
 set local role anon;
 set local request.jwt.claim.sub = '';
-select pg_temp.assert_count('select count(*) from public.songs', 0, 'anonymous catalog access denied');
-select pg_temp.assert_count('select count(*) from public.song_assets', 0, 'anonymous asset access denied');
+select pg_temp.assert_count('select count(*) from public.songs', 1, 'anonymous catalog shows collective only');
+select pg_temp.assert_count('select count(*) from public.song_assets', 1, 'anonymous audio assets show collective only');
 select pg_temp.assert_count('select count(*) from public.song_embeddings', 0, 'anonymous embedding access denied');
 select pg_temp.assert_count('select count(*) from public.song_lineage', 0, 'anonymous lineage access denied');
 select pg_temp.assert_count('select count(*) from public.generation_jobs', 0, 'anonymous job access denied');
 select pg_temp.assert_count('select count(*) from public.song_feedback', 0, 'anonymous feedback access denied');
+do $$
+declare target text; affected bigint;
+begin
+ foreach target in array array['songs','song_assets','song_embeddings','song_lineage','generation_jobs','song_feedback'] loop
+  execute format('update public.%I set created_at = created_at', target);
+  get diagnostics affected = row_count;
+  if affected <> 0 then raise exception 'Anonymous update allowed on %', target; end if;
+  execute format('delete from public.%I', target);
+  get diagnostics affected = row_count;
+  if affected <> 0 then raise exception 'Anonymous delete allowed on %', target; end if;
+ end loop;
+ begin
+  insert into public.songs (title) values ('Forbidden public song');
+  raise exception 'Anonymous insert was allowed';
+ exception when insufficient_privilege then raise notice 'PASS: anonymous insert denied';
+ end;
+ raise notice 'PASS: public catalog remains read-only across all six tables';
+end $$;
 rollback;

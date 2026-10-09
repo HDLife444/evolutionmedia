@@ -135,9 +135,9 @@ export function UploadPortal({ jobs }: { jobs: UploadJob[] }) {
             <label htmlFor="provenance">Provenance and rights evidence · administrator-only</label><textarea id="provenance" name="provenance" placeholder="Creator, source, creation date, and the permission or license covering this song." maxLength={2000} rows={4} required />
             <label htmlFor="visibility">Library visibility</label><select id="visibility" value={visibility} onChange={e => setVisibility(e.target.value)}>
               <option value="collective">Collective library</option><option value="private">Private library</option></select>
-            <p>Collective songs share their audio, lyrics, descriptions, goals, and metadata with signed-in users. Remove personal information before sharing. Private songs remain limited to their owner.</p>
+            <p>Collective songs are public: anyone can listen and read their lyrics, descriptions, goals, and metadata. Remove personal information before sharing. Private songs remain limited to their owner.</p>
             <label className="check"><input name="rights_confirmed" type="checkbox" required />I confirm I have permission to upload and store this song and its lyrics.</label>
-            {visibility === "collective" && <label className="check"><input name="collective_consent" type="checkbox" required />I approve sharing the song’s audio, lyrics, and musical context in the collective library.</label>}
+            {visibility === "collective" && <label className="check"><input name="collective_consent" type="checkbox" required />I approve publishing this song’s audio, lyrics, and musical context in the public collective library.</label>}
             <label className="check"><input name="reuse_allowed" type="checkbox" />I also authorize this song’s content as context for future compositions.</label>
             <p>Model training is not authorized by this upload. Industry Integration remains a separate future workflow.</p>
           </>}

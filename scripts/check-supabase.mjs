@@ -19,10 +19,11 @@ try {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(15000) }) },
   });
-  const { data, error } = await client.from('songs').select('id').limit(1);
+  const { data, error } = await client.from('songs').select('visibility').limit(50);
   if (error) throw new Error(`Catalog check failed (${error.code}): ${error.message}`);
-  if (data.length !== 0) throw new Error('Anonymous callers can read songs. Check RLS before continuing.');
-  console.log('Songs endpoint exists and returned no rows to the anonymous caller.');
+  if (data.some(song => song.visibility !== 'collective')) throw new Error('Anonymous callers can read non-collective songs. Check RLS before continuing.');
+  console.log('Songs endpoint reachable; anonymous results contain only collective songs:', data.length);
+  console.log('An empty result does not verify public collective access; apply the public-collective migration.');
   console.log('Authenticated visibility and Storage access still require separate checks.');
 } catch (error) {
   console.error(error instanceof Error ? error.message : 'Supabase connection check failed.');

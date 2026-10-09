@@ -86,6 +86,15 @@ select pg_temp.assert_true((select count(*)=1 from public.songs),'ordinary user 
 select pg_temp.expect_failure($q$select public.complete_song_ingestion('20000000-0000-0000-0000-000000000001')$q$,'42501','ordinary user cannot finalize upload');
 select pg_temp.expect_failure($q$insert into storage.objects(bucket_id,name) values('song-assets','unauthorized.mp3')$q$,'42501','ordinary user cannot upload');
 
+set local role anon;
+set local request.jwt.claim.sub = '';
+select pg_temp.assert_true((select count(*)=1 from public.songs),'public landing catalog excludes private song');
+select pg_temp.assert_true((select count(*)=1 from public.song_assets),'public asset lookup excludes private song');
+select pg_temp.assert_true((select count(*)=1 from storage.objects),'public listeners can access collective audio only');
+select pg_temp.assert_true((select count(*)=0 from public.song_ingestion_jobs),'public visitors cannot read provenance or ingestion records');
+select pg_temp.expect_failure($q$insert into storage.objects(bucket_id,name) values('song-assets','public-upload.mp3')$q$,'42501','public visitors cannot upload');
+set local role authenticated;
+set local request.jwt.claim.sub = '00000000-0000-0000-0000-000000000003';
 select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',now(),'{"title":"Hacked"}')$q$,'42501','ordinary listener cannot edit');
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
 select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',now(),'{"title":"Hacked"}')$q$,'42501','other administrator cannot edit');
@@ -115,7 +124,7 @@ select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-00
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-000000000003';
 select pg_temp.assert_true((select count(*)=0 from storage.objects),'making collective song private revokes listener storage access');
 set local role anon;
-select pg_temp.assert_true((select count(*)=0 from storage.objects),'anonymous playback denied');
+select pg_temp.assert_true((select count(*)=0 from storage.objects),'public playback revoked after song made private');
 select pg_temp.expect_failure($q$select public.update_ingested_song('20000000-0000-0000-0000-000000000001',now(),'{"title":"Anonymous"}')$q$,'42501','anonymous edits denied');
 reset role;
 select pg_temp.assert_true((select not public from storage.buckets where id='song-assets'),'audio bucket remains private');

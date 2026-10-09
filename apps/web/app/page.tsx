@@ -38,9 +38,13 @@ export default async function Page({ searchParams }: {
           <form action={signOut}><button className="secondary" type="submit">Sign out</button></form>
         </div>
         <SongCatalog />
-      </> : <section className="panel login">
+      </> : <>
+        <div className="section-heading"><h2>Explore the collective</h2></div>
+        <p>Press Play and discover music for your next chapter.</p>
+        <SongCatalog />
+        <section className="panel login queue">
         <h2>Welcome to your library</h2>
-        <p>Sign in to browse collective songs and your own private collection.</p>
+        <p>Sign in to access your private collection or manage your songs.</p>
         <form action={signIn}>
           <label htmlFor="email">Email</label>
           <input id="email" name="email" type="email" autoComplete="email" required />
@@ -48,7 +52,7 @@ export default async function Page({ searchParams }: {
           <input id="password" name="password" type="password" autoComplete="current-password" required />
           <button type="submit">Sign in</button>
         </form>
-      </section>}
+      </section></>}
       <footer>Evolution Media · Your music, your next chapter.</footer>
     </main>
   );

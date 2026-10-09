@@ -44,9 +44,9 @@ export function SongEditor({ submission, updatedAt }: { submission: SongSubmissi
       <label htmlFor="mood">Moods · separate with commas</label><input id="mood" name="mood" defaultValue={submission.mood.join(", ")} />
       <label htmlFor="visibility">Library visibility</label><select id="visibility" value={visibility} onChange={e => setVisibility(e.target.value as SongSubmission["visibility"])}>
         <option value="collective">Collective library</option><option value="private">Private library</option></select>
-      <p>Collective songs and their audio are available to signed-in listeners. Private songs are available to their owner.</p>
+      <p>Collective songs, their lyrics and context, and their audio are public. Private songs are available to their owner.</p>
       <label className="check"><input name="rights_confirmed" type="checkbox" required defaultChecked={submission.rights_confirmed} />I confirm permission to store and share this song according to the selected visibility.</label>
-      {visibility === "collective" && <label className="check"><input name="collective_consent" type="checkbox" required defaultChecked={submission.collective_consent} />I approve sharing this song and its musical context in the collective library.</label>}
+      {visibility === "collective" && <label className="check"><input name="collective_consent" type="checkbox" required defaultChecked={submission.collective_consent} />I approve publishing this song and its musical context in the public collective library.</label>}
       <label className="check"><input name="reuse_allowed" type="checkbox" defaultChecked={submission.reuse_allowed} />I authorize its content as context for future compositions.</label>
       <button type="submit">{busy ? "Saving…" : "Save changes"}</button>
     </fieldset></form>
