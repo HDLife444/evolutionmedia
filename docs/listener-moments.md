@@ -71,3 +71,19 @@ retrieval function over persisted vectors instead of the small in-memory index.
 
 Playback reuses the existing signed-URL player. The library remains browsable
 when matching is unavailable. No Supabase migration is required for this release.
+
+## Deployment validation status
+
+The public UI and endpoint are deployed. Type checking, the production build,
+seven moment-search unit tests, seven ingestion/provider-contract tests, and
+local HTTP checks passed. The production library is reachable, but live matching
+returns HTTP 503 with `matching_quota`; OpenAI returns 429 with exhausted account
+quota. The six relevance cases are therefore blocked, not passed or evidence of
+poor ranking. No listener-quality claim has been made from synthetic vectors.
+
+Activate API billing/available credits for the OpenAI project whose key is saved
+as `SOUND_VECTOR_EMBEDDING_API_KEY` in Vercel. A ChatGPT subscription is separate.
+If the same key remains valid, no app deployment, database migration, or manual
+song reindexing is needed after quota becomes available. Rerun the evaluation
+script and check the example results and playback before marking live relevance
+verified. The script stops on a service failure instead of issuing more requests.

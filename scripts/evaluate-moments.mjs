@@ -18,6 +18,7 @@ for (const item of cases) {
   } catch (error) {
     console.log(JSON.stringify({ name: item.name, pass: false, error: error.message }));
     failed = true;
+    break; // A service/configuration failure blocks later cases; do not keep retrying.
   }
 }
 if (failed) process.exitCode = 1;
