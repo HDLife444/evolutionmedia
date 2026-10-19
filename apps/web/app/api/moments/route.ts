@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     if (error instanceof EmbeddingProviderError) {
       const code = error.quotaExhausted ? "matching_quota" : [401, 403].includes(error.status) ? "matching_credentials" : "matching_provider";
       return Response.json({
-        error: "Moment search is temporarily unavailable. You can still explore and play the songs below.", code, providerStatus: error.status,
+        error: "Moment search is temporarily unavailable. You can still explore and play the songs below.", code, providerStatus: error.status, providerReason: error.reason,
       }, { status: 503, headers });
     }
     // Never log a listener's words, provider bodies, or keys.
