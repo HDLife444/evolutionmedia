@@ -8,7 +8,8 @@
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "next typegen && tsc --noEmit",
     "test:auth": "tsx --test tests/session.test.ts",
-    "test:ingestion": "tsx --test tests/ingestion.test.ts tests/text-embeddings.test.ts"
+    "test:ingestion": "tsx --test tests/ingestion.test.ts tests/text-embeddings.test.ts",
+    "test:moments": "tsx --test tests/moment-search.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

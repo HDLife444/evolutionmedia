@@ -1,0 +1,32 @@
+[
+  {
+    "name": "fresh-start-confidence",
+    "query": "I’m starting over and need confidence.",
+    "expectedAny": ["I Am!", "It Is My Life", "It Is My Life (Piano Version)"]
+  },
+  {
+    "name": "distractions-and-focus",
+    "query": "I keep getting distracted and want to stay on my path.",
+    "expectedAny": ["Keep Your Focus"]
+  },
+  {
+    "name": "connection-and-individuality",
+    "query": "I want to feel love and connection while staying true to myself.",
+    "expectedAny": ["Together"]
+  },
+  {
+    "name": "celebrate-completion",
+    "query": "I finished something difficult and want to celebrate my achievement.",
+    "expectedAny": ["I Walked The Fire!"]
+  },
+  {
+    "name": "motivation-to-act",
+    "query": "I need energy and motivation to get to work on my dreams.",
+    "expectedAny": ["Go Get It!"]
+  },
+  {
+    "name": "outside-current-collection",
+    "query": "Explain the hardware specifications of a quantum computer.",
+    "expectedAny": []
+  }
+]

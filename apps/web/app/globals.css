@@ -47,3 +47,13 @@ fieldset:disabled { opacity: .7; }
 .song-player audio { width: 100%; min-width: 0; }
 .section-heading { flex-wrap: wrap; }
 button:disabled { cursor: wait; opacity: .7; }
+.moment-search { margin-bottom: 44px; border-color: #738b62; background: linear-gradient(135deg, #223326, #18221b); }
+.moment-search > h2 { font-size: clamp(28px, 4vw, 38px); letter-spacing: -.03em; margin: 16px 0; }
+.moment-search > p { max-width: 690px; }
+.moment-submit { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.moment-count, .moment-note { color: #afbea8; font-size: 13px; }
+.moment-note { margin: 0; }
+.moment-examples { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+.moment-examples button { font-size: 14px; border-radius: 24px; padding: 10px 16px; }
+.moment-results { border-top: 1px solid #52694a; margin-top: 28px; padding-top: 8px; }
+.moment-focus { font-size: 14px; color: #c7d9b7; }

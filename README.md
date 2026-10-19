@@ -46,6 +46,7 @@ do not rerun the creation migration against the existing tables.
 - [Activate the administrator upload portal](docs/admin-ingestion.md)
 - [Activate text indexing and semantic search](docs/text-indexing.md)
 - [Activate the public collective landing page](docs/public-collective.md)
+- [Listener moment search and relevance checks](docs/listener-moments.md)
 
 ## Run the web app
 

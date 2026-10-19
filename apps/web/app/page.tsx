@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { signIn, signOut } from "./actions";
 import Link from "next/link";
 import { SongPlayer } from "./song-player";
+import { MomentSearch } from "./moment-search";
 
 const notices: Record<string, string> = {
   "missing-credentials": "Enter your email and password.",
@@ -31,6 +32,7 @@ export default async function Page({ searchParams }: {
       </section>
       {notice && <p role="alert" className="notice">{notice}</p>}
       {authUnavailable && <p role="alert" className="notice">We couldn’t verify your session. Please try again shortly.</p>}
+      <MomentSearch />
       {user ? <>
         <div className="section-heading">
           <h2>Your library</h2>
