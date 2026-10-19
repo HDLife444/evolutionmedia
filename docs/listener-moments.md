@@ -69,8 +69,8 @@ retrieval function over persisted vectors instead of the small in-memory index.
   evaluating. They are an initial developer relevance check, not listener-rated
   proof of quality; expand them with the owner's judgments.
 
-Playback reuses the existing signed-URL player. The library remains browsable
-when matching is unavailable. No Supabase migration is required for this release.
+Playback reuses the existing signed-URL player. The full collection is hidden from the landing page; songs appear only after a
+listener submits a moment. Administrator song management remains available. No Supabase migration is required for this release.
 
 ## Deployment validation status
 

@@ -60,7 +60,7 @@ export function MomentSearch() {
       {results !== null && <div className="moment-results">
         <h3>{results.length ? "Songs for your moment" : "A new chapter for the collection"}</h3>
         <p>{results.length ? "Try a song and see how it feels. These are suggestions from our growing collection."
-          : "We don’t have a close match in this small collection yet. Try describing your moment another way, or explore the songs below."}</p>
+          : "We don’t have a close match in this small collection yet. Try describing your moment another way."}</p>
         {results.length > 0 && <ul className="catalog">{results.map(song => <li className="panel" key={song.id}>
           <span className="eyebrow">Collective</span><h3>{song.title}</h3>
           {song.description && <p>{song.description}</p>}

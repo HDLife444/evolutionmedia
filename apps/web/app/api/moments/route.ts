@@ -53,20 +53,20 @@ export async function POST(request: Request) {
       .order("id").limit(MAX_SEARCH_SONGS + 1);
     if (error) return failure("The library is temporarily unavailable. Please try again shortly.", 503);
     if (!data?.length) return Response.json({ songs: [] }, { headers });
-    if (data.length > MAX_SEARCH_SONGS) return failure("Moment search is being updated for the growing library. Please browse the songs below.", 503);
+    if (data.length > MAX_SEARCH_SONGS) return failure("Moment search is being updated for the growing library. Please try again later.", 503);
     const key = process.env.SOUND_VECTOR_EMBEDDING_API_KEY?.trim();
-    if (!key) return failure("Moment search is being connected. You can still explore and play the songs below.", 503);
+    if (!key) return failure("Moment search is being connected. Please try again later.", 503);
     const songs = await search(query, data as PublicSong[], key);
     return Response.json({ songs }, { headers });
   } catch (error) {
     if (error instanceof EmbeddingProviderError) {
       const code = error.quotaExhausted ? "matching_quota" : [401, 403].includes(error.status) ? "matching_credentials" : "matching_provider";
       return Response.json({
-        error: "Moment search is temporarily unavailable. You can still explore and play the songs below.", code, providerStatus: error.status, providerReason: error.reason,
+        error: "Moment search is temporarily unavailable. Please try again shortly.", code, providerStatus: error.status, providerReason: error.reason,
       }, { status: 503, headers });
     }
     // Never log a listener's words, provider bodies, or keys.
-    return Response.json({ error: "We couldn’t match this moment just now. Please try again shortly, or explore the songs below.",
+    return Response.json({ error: "We couldn’t match this moment just now. Please try again shortly.",
       code: error instanceof Error && error.message === "Embedding provider returned an unexpected model or result count."
         ? "matching_model" : error instanceof Error && error.message === "Embedding provider returned an invalid vector."
         ? "matching_vectors" : "matching_internal",

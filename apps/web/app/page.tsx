@@ -1,7 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { signIn, signOut } from "./actions";
 import Link from "next/link";
-import { SongPlayer } from "./song-player";
 import { MomentSearch } from "./moment-search";
 
 const notices: Record<string, string> = {
@@ -35,18 +34,14 @@ export default async function Page({ searchParams }: {
       <MomentSearch />
       {user ? <>
         <div className="section-heading">
-          <h2>Your library</h2>
+          <h2>Your account</h2>
           <Link className="admin-link" href="/admin">Admin</Link>
           <form action={signOut}><button className="secondary" type="submit">Sign out</button></form>
         </div>
-        <SongCatalog />
       </> : <>
-        <div className="section-heading"><h2>Explore the collective</h2></div>
-        <p>Press Play and discover music for your next chapter.</p>
-        <SongCatalog />
         <section className="panel login queue">
         <h2>Welcome to your library</h2>
-        <p>Sign in to access your private collection or manage your songs.</p>
+        <p>Sign in to manage your songs.</p>
         <form action={signIn}>
           <label htmlFor="email">Email</label>
           <input id="email" name="email" type="email" autoComplete="email" required />
@@ -58,28 +53,4 @@ export default async function Page({ searchParams }: {
       <footer>Evolution Media · Your music, your next chapter.</footer>
     </main>
   );
-}
-
-async function SongCatalog() {
-  const supabase = await createClient();
-  // The caller's session and database RLS scope this query. Never use a service
-  // key to make the collective/private catalog readable from this page.
-  const { data: songs, error } = await supabase.from("songs")
-    .select("id,title,description,visibility,genre,mood")
-    .order("created_at", { ascending: false })
-    .limit(50);
-
-  if (error) {
-    return <p role="alert" className="panel">Your library is temporarily unavailable. Please try again shortly.</p>;
-  }
-  if (!songs?.length) {
-    return <section className="panel"><h3>Your first chapter starts here.</h3><p>No songs are available yet. Your foundational collection will appear here as it’s added.</p></section>;
-  }
-  return <ul className="catalog">{songs.map(song => <li key={song.id} className="panel">
-    <span className="eyebrow">{song.visibility === "private" ? "Private" : "Collective"}</span>
-    <h3>{song.title}</h3>
-    {song.description && <p>{song.description}</p>}
-    {song.genre?.length > 0 && <p className="tags">{song.genre.join(" · ")}</p>}
-    <SongPlayer songId={song.id} title={song.title} />
-  </li>)}</ul>;
 }
