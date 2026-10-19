@@ -22,6 +22,13 @@ export function songTextChunks(submission: Record<string, unknown>): TextChunk[]
   });
 }
 
+export class EmbeddingProviderError extends Error {
+  constructor(readonly status: number, readonly quotaExhausted = false) {
+    super(`Embedding provider returned HTTP ${status}.`);
+    this.name = "EmbeddingProviderError";
+  }
+}
+
 export async function embedTexts(texts: string[], key: string, fetcher: typeof fetch = fetch): Promise<number[][]> {
   const response = await fetcher("https://api.openai.com/v1/embeddings", {
     method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
@@ -29,7 +36,16 @@ export async function embedTexts(texts: string[], key: string, fetcher: typeof f
     signal: AbortSignal.timeout(45000),
   });
   // Do not log provider response bodies, input lyrics, or credentials.
-  if (!response.ok) throw new Error(`Embedding provider returned HTTP ${response.status}.`);
+  if (!response.ok) {
+    // Retain only a known billing classification, never the provider's body,
+    // echoed input, account details, or full error message.
+    let quotaExhausted = false;
+    if (response.status === 429) {
+      const body = await response.json().catch(() => null) as { error?: { code?: unknown } } | null;
+      quotaExhausted = body?.error?.code === "insufficient_quota";
+    }
+    throw new EmbeddingProviderError(response.status, quotaExhausted);
+  }
   const body = await response.json() as { model?: string; data?: { index: number; embedding: number[] }[] };
   if (body.model !== EMBEDDING_MODEL || !Array.isArray(body.data) || body.data.length !== texts.length) {
     throw new Error("Embedding provider returned an unexpected model or result count.");

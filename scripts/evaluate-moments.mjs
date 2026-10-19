@@ -10,7 +10,7 @@ for (const item of cases) {
       body: JSON.stringify({ query: item.query }), signal: AbortSignal.timeout(60_000),
     });
     const result = await response.json();
-    if (!response.ok) throw new Error(`HTTP ${response.status}: ${result.error ?? 'Search unavailable'}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status} (${result.code ?? 'unavailable'}): ${result.error ?? 'Search unavailable'}`);
     const titles = result.songs.map(song => song.title);
     const pass = item.expectedAny.length ? item.expectedAny.some(title => titles.includes(title)) : !titles.length;
     console.log(JSON.stringify({ name: item.name, pass, returnedTitles: titles, expectedAny: item.expectedAny }));

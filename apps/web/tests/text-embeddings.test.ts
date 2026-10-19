@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { EMBEDDING_DIMENSIONS, embedTexts, songTextChunks } from "../utils/text-embeddings";
+import { EMBEDDING_DIMENSIONS, EmbeddingProviderError, embedTexts, songTextChunks } from "../utils/text-embeddings";
 
 test("indexing includes complete bounded lyrics but excludes private provenance", () => {
   const lyrics = "🎵".repeat(2500);
@@ -31,4 +31,14 @@ test("wrong vector spaces, malformed results, and provider failures are rejected
     await assert.rejects(embedTexts(["query"], "synthetic-test-key", (async () => Response.json(body)) as typeof fetch));
   }
   await assert.rejects(embedTexts(["query"], "synthetic-test-key", (async () => new Response("", { status: 401 })) as typeof fetch));
+});
+
+test("provider quota classification retains no provider message or input", async () => {
+  await assert.rejects(embedTexts(["PRIVATE QUERY"], "synthetic-test-key", (async () => Response.json({
+    error: { code: "insufficient_quota", message: "PRIVATE PROVIDER DETAILS" },
+  }, { status: 429 })) as typeof fetch), error => {
+    assert.ok(error instanceof EmbeddingProviderError && error.quotaExhausted && error.status === 429);
+    assert.ok(!JSON.stringify(error).includes("PRIVATE"));
+    return true;
+  });
 });

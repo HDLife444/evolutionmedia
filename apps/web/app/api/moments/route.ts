@@ -1,7 +1,7 @@
 import { createHmac, randomBytes } from "node:crypto";
 import { createClient } from "@/utils/supabase/server";
 import { createMomentSearcher, MAX_SEARCH_SONGS, validateMoment, type PublicSong } from "@/utils/moment-search";
-import { embedTexts } from "@/utils/text-embeddings";
+import { embedTexts, EmbeddingProviderError } from "@/utils/text-embeddings";
 import { createMomentLimits } from "@/utils/moment-limits";
 
 export const runtime = "nodejs";
@@ -58,8 +58,18 @@ export async function POST(request: Request) {
     if (!key) return failure("Moment search is being connected. You can still explore and play the songs below.", 503);
     const songs = await search(query, data as PublicSong[], key);
     return Response.json({ songs }, { headers });
-  } catch {
+  } catch (error) {
+    if (error instanceof EmbeddingProviderError) {
+      const code = error.quotaExhausted ? "matching_quota" : [401, 403].includes(error.status) ? "matching_credentials" : "matching_provider";
+      return Response.json({
+        error: "Moment search is temporarily unavailable. You can still explore and play the songs below.", code,
+      }, { status: 503, headers });
+    }
     // Never log a listener's words, provider bodies, or keys.
-    return failure("We couldn’t match this moment just now. Please try again shortly, or explore the songs below.", 503);
+    return Response.json({ error: "We couldn’t match this moment just now. Please try again shortly, or explore the songs below.",
+      code: error instanceof Error && error.message === "Embedding provider returned an unexpected model or result count."
+        ? "matching_model" : error instanceof Error && error.message === "Embedding provider returned an invalid vector."
+        ? "matching_vectors" : "matching_internal",
+    }, { status: 503, headers });
   } finally { release(); }
 }
