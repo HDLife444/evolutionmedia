@@ -1,6 +1,6 @@
 import { smallJson, validGenerationId, GENERATION_GENRES, GENERATION_KINDS } from "@/utils/generation";
 import { generationFailure } from "@/utils/generation-server";
-import { musicWorkerReply, workerIdentity } from "@/utils/music-cloud";
+import { musicRpcRow, musicWorkerReply, workerIdentity } from "@/utils/music-cloud";
 export const runtime = "nodejs";
 export async function POST(request: Request) {
   const auth = await workerIdentity(request);
@@ -15,7 +15,8 @@ export async function POST(request: Request) {
     }
     const { data, error } = await auth.service.rpc("reserve_legacy_recording", { p_worker: auth.worker.id,
       p_input: { id: input.id, owner_id: auth.worker.owner_id, moment: input.moment.trim(), genre: input.genre, kind: input.kind, duration: input.duration, created_at: input.created_at } });
-    if (error || !data?.id) return generationFailure("The existing recording could not be reserved.", 409);
-    return musicWorkerReply({ id: data.id, status: data.status, lease_id: data.lease_id });
+    const row = musicRpcRow(data);
+    if (error || !row?.id) return generationFailure("The existing recording could not be reserved.", 409);
+    return musicWorkerReply({ id: row.id, status: row.status, lease_id: row.lease_id });
   } catch { return generationFailure("Invalid existing recording.", 400); }
 }

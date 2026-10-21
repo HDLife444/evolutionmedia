@@ -1,6 +1,6 @@
 import { generationAdministrator, generationFailure, privateHeaders } from "@/utils/generation-server";
 import { sameOriginRequest } from "@/utils/generation";
-import { cloudMusicConfigured, cloudServerStatus, musicDatabaseFailure, musicService, newWorkerToken, tokenHash } from "@/utils/music-cloud";
+import { musicRpcRow, cloudMusicConfigured, cloudServerStatus, musicDatabaseFailure, musicService, newWorkerToken, tokenHash } from "@/utils/music-cloud";
 export const runtime = "nodejs";
 
 export async function GET() {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const token = newWorkerToken();
     const { data, error } = await musicService().rpc("register_music_worker", { p_owner: auth.owner, p_secret_hash: tokenHash(token) });
     if (error) return musicDatabaseFailure(error);
-    if (!data?.id) return generationFailure("The server registration could not be completed.", 503);
+    if (!musicRpcRow(data)?.id) return generationFailure("The server registration could not be completed.", 503);
     return new Response(JSON.stringify({ version: 1, site_url: siteUrl.origin,
       storage_origin: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).origin, worker_token: token, owner_id: auth.owner }), {
       headers: { ...privateHeaders, "Content-Type": "application/json", "Content-Disposition": 'attachment; filename="evolutionmedia-worker.json"', "X-Content-Type-Options": "nosniff" },

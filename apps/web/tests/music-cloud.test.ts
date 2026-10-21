@@ -4,12 +4,17 @@ import { POST as claim } from "../app/api/generator-worker/claim/route";
 import { POST as upload } from "../app/api/generator-worker/upload/route";
 import { POST as complete } from "../app/api/generator-worker/complete/route";
 import { POST as cleanup } from "../app/api/generator-worker/cleanup/route";
-import { tokenHash } from "../utils/music-cloud";
+import { musicRpcRow, tokenHash } from "../utils/music-cloud";
 
 const owner="00000000-0000-0000-0000-000000000001", id="11111111-1111-4111-a111-111111111111", lease="22222222-2222-4222-a222-222222222222", worker="33333333-3333-4333-a333-333333333333";
 const token="emw_"+"A".repeat(64);
 const request=(body:unknown={},auth=true)=>new Request("https://evolutionmedia.vercel.app/api/generator-worker/test",{method:"POST",headers:{"content-type":"application/json",...(auth?{authorization:"Bearer "+token}:{})},body:JSON.stringify(body)});
 const json=(value:unknown)=>new Response(JSON.stringify(value),{headers:{"content-type":"application/json"}});
+test("composite RPC results accept singular and table representations without accepting multiple rows",()=>{
+  assert.deepEqual(musicRpcRow({id}),{id});
+  assert.deepEqual(musicRpcRow([{id}]),{id});
+  assert.equal(musicRpcRow([]),null);assert.equal(musicRpcRow([{id},{id}]),null);
+});
 test("worker HTTP handlers authenticate, bind upload paths and leases, whitelist results and preserve idempotency", async()=>{
   const originalFetch=globalThis.fetch;
   const previousUrl=process.env.NEXT_PUBLIC_SUPABASE_URL, previousKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -32,7 +37,7 @@ test("worker HTTP handlers authenticate, bind upload paths and leases, whitelist
       if(url.searchParams.get("lease_id") && !validLease) return json(null);
       return json({id,owner_id:owner,worker_id:worker,lease_id:lease,status,origin:"cloud"});
     }
-    if(url.pathname==="/rest/v1/rpc/claim_music_recording") return json({id,owner_id:owner,moment:"Hope",duration:240,genre:"soul",kind:"vocal",lease_id:lease,secret_hash:"NEVER_RETURN"});
+    if(url.pathname==="/rest/v1/rpc/claim_music_recording") return json([{id,owner_id:owner,moment:"Hope",duration:240,genre:"soul",kind:"vocal",lease_id:lease,secret_hash:"NEVER_RETURN"}]);
     if(url.pathname.startsWith("/storage/v1/object/upload/sign/")){
       signedPath=url.pathname;
       return json({url:url.pathname.replace("/storage/v1", "")+"?token=scoped"});

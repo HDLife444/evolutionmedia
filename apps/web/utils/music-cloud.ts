@@ -6,7 +6,11 @@ import { publicJob, validGenerationId } from "./generation";
 
 export const MUSIC_BUCKET = "generated-music";
 export const CLOUD_AUDIO_LIMIT = 8 * 1024 * 1024;
-export const FULL_TRACK_DURATION = 240;
+// PostgREST can represent a composite RPC result as a single-row array.
+export const musicRpcRow = (value: unknown): Record<string, unknown> | null => {
+  const row = Array.isArray(value) ? (value.length === 1 ? value[0] : null) : value;
+  return row && typeof row === "object" && !Array.isArray(row) ? row as Record<string, unknown> : null;
+};
 export const MUSIC_FIELDS = "id,status,moment,genre,kind,duration,created_at,updated_at,lyrics,audio_path,actual_duration,origin,worker_id,lease_id";
 export function cloudMusicConfigured() { return Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()); }
 export function musicService() {

@@ -1,7 +1,7 @@
 import { generationAdministrator, generationFailure, privateHeaders, workerConnection, workerJson } from "@/utils/generation-server";
 import { publicJob, sameOriginRequest, smallJson, validGenerationInput } from "@/utils/generation";
 import { createClient } from "@/utils/supabase/server";
-import { cloudJobs, cloudMusicConfigured, cloudServerStatus, musicDatabaseFailure } from "@/utils/music-cloud";
+import { musicRpcRow, cloudJobs, cloudMusicConfigured, cloudServerStatus, musicDatabaseFailure } from "@/utils/music-cloud";
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
@@ -39,6 +39,6 @@ export async function POST(request: Request) {
     const client = await createClient();
     const { data, error } = await client.rpc("enqueue_music_recording", { p_id: input.id, p_moment: input.moment.trim(), p_genre: input.genre, p_kind: input.kind });
     if (error) return musicDatabaseFailure(error);
-    return Response.json({ job: publicJob(data, input.id) }, { headers: privateHeaders });
+    return Response.json({ job: publicJob(musicRpcRow(data), input.id) }, { headers: privateHeaders });
   } catch { return generationFailure("The server’s reply was interrupted. Check status or retry this same request; it will not create a duplicate track.", 503); }
 }
