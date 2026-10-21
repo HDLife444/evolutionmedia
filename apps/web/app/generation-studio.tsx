@@ -10,7 +10,7 @@ type TrackKind = "vocal" | "instrumental" | "soundscape";
 type TrackStatus = "queued" | "running" | "completed" | "failed";
 type GenerationRequest = { id: string; moment: string; genre: string; kind: TrackKind; duration: number };
 type GenerationJob = GenerationRequest & {
-  status: TrackStatus; created_at: string; progress?: string; error?: string;
+  status: TrackStatus; created_at: string; progress?: string; error?: string; lyrics?: string;
 };
 type Availability = { ready: boolean; message?: string; jobs?: GenerationJob[]; canDelete?: boolean };
 const genres = [
@@ -250,7 +250,12 @@ export function GenerationStudio() {
       </div>
       {active(selected) && pollError && <button type="button" className="secondary" onClick={() => setPollVersion(version => version + 1)}>Check track status</button>}
       {selected.status === "completed" && <div className="generation-playback">
-        <p>Your track is ready. Press Play and hear how it feels.</p>
+        <p>Your track has been created. Review the words and listen to how it feels.</p>
+        {selected.kind === "vocal" && <details className="generation-lyrics" open>
+          <summary>Written lyrics</summary>
+          <p>These are the intended words. Compare them with what you hear in the recording.</p>
+          {selected.lyrics?.trim() ? <pre>{selected.lyrics}</pre> : <p>The written lyrics aren’t available for this track.</p>}
+        </details>}
         <audio key={selected.id} ref={audio} controls preload="none" aria-label="Your generated track"
           src={`/api/generation/${selected.id}/audio`} onError={() => setAudioError("The audio couldn’t load. Refresh the page to reconnect, then try Play again.")}
           onPlay={() => document.querySelectorAll("audio").forEach(other => { if (other !== audio.current) other.pause(); })} />

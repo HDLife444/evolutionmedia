@@ -155,3 +155,8 @@ button:disabled { cursor: wait; opacity: .7; }
 .playlist-add-chooser .notice { width: 100%; }
 @media (max-width: 760px) { .playlist-workspace { grid-template-columns: minmax(0, 1fr); } .playlist-list ul { grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); } }
 @media (max-width: 540px) { .playlist-create-fields { flex-direction: column; } .playlist-create-fields button { align-self: flex-start; } .playlist-detail-heading { align-items: flex-start; } }
+
+.generation-lyrics { margin: 20px 0; padding: 18px; border: 1px solid #53674b; border-radius: 10px; min-width: 0; }
+.generation-lyrics summary { cursor: pointer; font-weight: 700; }
+.generation-lyrics p { font-size: 14px; color: #c3cdc0; }
+.generation-lyrics pre { white-space: pre-wrap; overflow-wrap: anywhere; font-family: inherit; line-height: 1.7; margin-bottom: 0; }
