@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MomentSearch } from "./moment-search";
 
 const notices: Record<string, string> = {
+  "generator-sign-in": "Sign in with your administrator account to test music generation.",
   "missing-credentials": "Enter your email and password.",
   "sign-in-failed": "We couldn’t sign you in. Check your credentials and try again.",
   "sign-out-failed": "We couldn’t sign you out. Please try again.",
@@ -31,6 +32,7 @@ export default async function Page({ searchParams }: {
       </section>
       {notice && <p role="alert" className="notice">{notice}</p>}
       {authUnavailable && <p role="alert" className="notice">We couldn’t verify your session. Please try again shortly.</p>}
+      <section className="panel generation-invitation"><span className="eyebrow">Evolution Media Generator · Administrator preview</span><h2>Create music for your moment</h2><p>Choose your genre and turn the state you want to feel into a new song, instrumental, or soundscape.</p><Link className="generation-download" href="/generate">Open the music generator</Link></section>
       <MomentSearch />
       {user ? <>
         <div className="section-heading">

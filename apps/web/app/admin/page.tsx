@@ -33,6 +33,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <h1>Give your library<br />its first voice.</h1>
       <p>Upload one song, preserve its story, and prepare it for Sound Vector.</p>
     </section>
+    <p><Link className="generation-download" href="/generate">Open the music generator</Link></p>
     {notice === "song-saved" && <p role="status" className="notice">Changes saved. Select Index song to update its search results.</p>}
     {unavailable ? <p role="alert" className="panel">Administrator access is unavailable. The upload portal may still need activation.</p>
       : <><UploadPortal jobs={jobs} /><TextSearch /></>}

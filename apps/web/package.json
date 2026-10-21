@@ -9,7 +9,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test:auth": "tsx --test tests/session.test.ts",
     "test:ingestion": "tsx --test tests/ingestion.test.ts tests/text-embeddings.test.ts",
-    "test:moments": "tsx --test tests/moment-search.test.ts"
+    "test:moments": "tsx --test tests/moment-search.test.ts",
+    "test:generation": "tsx --test tests/generation.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

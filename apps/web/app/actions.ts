@@ -1,5 +1,7 @@
 "use server";
 
+import { cookies } from "next/headers";
+import { CONNECTION_COOKIE } from "@/utils/generation-server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 
@@ -19,5 +21,6 @@ export async function signOut() {
   const supabase = await createClient();
   const { error } = await supabase.auth.signOut();
   if (error) redirect("/?notice=sign-out-failed");
+  (await cookies()).set(CONNECTION_COOKIE, "", { path: "/", maxAge: 0, httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict" });
   redirect("/");
 }
