@@ -13,7 +13,16 @@ export async function signIn(formData: FormData) {
   }
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-  if (error) redirect("/?notice=sign-in-failed");
+  if (error) {
+    // Use fixed messages only. Auth error bodies can contain private inputs.
+    if (error.code === "invalid_credentials") redirect("/?notice=sign-in-invalid");
+    if (error.code === "email_not_confirmed") redirect("/?notice=sign-in-unconfirmed");
+    if (error.status === 429) redirect("/?notice=sign-in-rate-limited");
+    if (error.name === "AuthRetryableFetchError" || !error.status || error.status >= 500) {
+      redirect("/?notice=sign-in-unavailable");
+    }
+    redirect("/?notice=sign-in-failed");
+  }
   redirect("/");
 }
 

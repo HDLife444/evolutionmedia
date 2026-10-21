@@ -59,5 +59,10 @@ Storage access still need their own tests before real song uploads.
   the install command is `cd ../.. && npm ci`.
 - Sign-in failure: check that the user belongs to the Evolution Media project,
   is confirmed, and the deployed app uses this project's URL and publishable key.
+  The form distinguishes rejected credentials, an unconfirmed email address,
+  rate limiting, and temporary Auth/network failures using fixed messages. It
+  does not display raw Auth errors or log submitted credentials. A
+  `sign-in-failed` or more specific failure notice means the password exchange
+  returned an error; it does not establish that a successful session was lost.
 - Library unavailable: inspect Supabase and server logs for the database error;
   never replace the session-scoped client with a service-role client to bypass RLS.
