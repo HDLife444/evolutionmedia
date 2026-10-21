@@ -31,4 +31,5 @@ for migration in "$project_root"/supabase/migrations/*.sql; do run_sql "$migrati
 run_sql "$project_root/tests/database/permissions.sql"
 run_sql "$project_root/tests/database/ingestion.sql"
 run_sql "$project_root/tests/database/indexing.sql"
+run_sql "$project_root/tests/database/playlists.sql"
 echo 'Database migration and permission checks passed.'

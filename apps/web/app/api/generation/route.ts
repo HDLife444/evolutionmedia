@@ -14,7 +14,8 @@ export async function GET() {
     ]);
     if (!health.ok || !list.ok) return Response.json({ ready: false, message: "Your music server couldn’t be reached. Check that it’s running, or reconnect it.", jobs: [] }, { headers: privateHeaders });
     const jobs = (Array.isArray(list.data) ? list.data : list.data.jobs ?? []).slice(0,20).map((job: unknown) => publicJob(job));
-    return Response.json({ ready: health.data.ready === true, message: health.data.ready === true ? undefined : "Your music server is warming up. Refresh in a moment.", jobs }, { headers: privateHeaders });
+    return Response.json({ ready: health.data.ready === true, canDelete: health.data.capabilities?.delete_jobs === true,
+      message: health.data.ready === true ? undefined : "Your music server is warming up. Refresh in a moment.", jobs }, { headers: privateHeaders });
   } catch { return Response.json({ ready: false, message: "Your music server is offline or restarting. Reconnect when it’s ready.", jobs: [] }, { headers: privateHeaders }); }
 }
 export async function POST(request: Request) {
@@ -27,8 +28,8 @@ export async function POST(request: Request) {
   const connection = await workerConnection(auth.owner);
   if (!connection) return generationFailure("Connect your Lambda music server to begin.", 503);
   try {
-    const result = await workerJson(connection, "/v1/jobs", { ...input, owner_id: auth.owner });
-    if (!result.ok) return generationFailure(result.status === 429 ? "The music server’s queue is full. Check your recent tracks before starting another."
+    const result = await workerJson(connection, "/v1/jobs", { id: input.id, moment: input.moment, genre: input.genre, kind: input.kind, duration: input.duration, owner_id: auth.owner });
+    if (!result.ok) return generationFailure(result.status === 429 ? "The music server is busy or you’ve reached the recent generation limit. Please wait a few minutes before starting another track."
       : result.status === 409 ? "This request already has different settings. Refresh before starting a new track."
       : "Your music server couldn’t accept the request. Please check its connection.", result.status === 429 ? 429 : result.status === 409 ? 409 : 503);
     return Response.json({ job: publicJob(result.data.job ?? result.data, input.id) }, { headers: privateHeaders });

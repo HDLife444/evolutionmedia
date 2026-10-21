@@ -10,7 +10,10 @@ genres, selects vocals/instrumental/soundscape, and requests 30/60/90/120 second
 A UUID represents the request. Repeating the same ID/payload returns the same
 worker job; changing its payload conflicts. The UI polls existing jobs rather
 than silently requesting more GPU work after a lost reply. It shows queue,
-progress, completion, failure, recent tracks, inline playback, and download.
+progress, completion, failure, recent tracks, inline playback, download, and
+owner-confirmed deletion. Completed tracks can be added to private playlists.
+The worker must advertise `capabilities.delete_jobs` before deletion is enabled;
+an existing Lambda worker needs the update in its setup documentation.
 
 ## Lambda connection
 
@@ -48,9 +51,10 @@ Job status and private generated MP3 files live on the Lambda instance's local
 disk. A worker restart preserves completed jobs, fails interrupted running jobs
 without regenerating them, and resumes previously queued jobs. Terminating the
 Lambda instance deletes local files; download test tracks before termination.
-This preview does not yet copy new results into the Supabase library, publish
-collective songs, build playlists, or create persistent Sound Vector embeddings.
-Those remain explicit follow-up stages after real generation/playback is verified.
+This preview does not yet copy new audio into the Supabase library, publish
+collective songs, or create persistent Sound Vector embeddings. Playlists store
+owner-private track references after the separate playlist migration; they do
+not make a permanent copy of generated audio. See [playlist activation](private-playlists.md).
 
 Disconnecting the site or stopping the worker does not stop Lambda compute
 billing. Manage the instance itself in Lambda. Existing RunPod storage and any
@@ -63,6 +67,6 @@ connection host validation, same-origin requests, sanitized presentation, and
 JSON body limits. The private worker has independent tests of authorization,
 owner isolation, durable idempotency/queues/restarts, audio path constraints,
 and mocked model integration. Site build/typecheck and anonymous HTTP checks
-must pass before deployment. End-to-end GPU/browser playback still requires
-the one-time launcher and connection on the existing Lambda machine; synthetic
-worker tests do not establish real generation quality.
+must pass before deployment. The owner has generated and played tracks through
+the website. Synthetic worker tests do not establish real generation quality;
+deletion still needs the current worker installed and a live owner test.

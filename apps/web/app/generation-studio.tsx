@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { AddToPlaylist } from "./add-to-playlist";
+import { notifyPlaylistsChanged } from "@/utils/playlist-events";
 
 type TrackKind = "vocal" | "instrumental" | "soundscape";
 type TrackStatus = "queued" | "running" | "completed" | "failed";
@@ -9,7 +11,7 @@ type GenerationRequest = { id: string; moment: string; genre: string; kind: Trac
 type GenerationJob = GenerationRequest & {
   status: TrackStatus; created_at: string; progress?: string; error?: string;
 };
-type Availability = { ready: boolean; message?: string; jobs?: GenerationJob[] };
+type Availability = { ready: boolean; message?: string; jobs?: GenerationJob[]; canDelete?: boolean };
 const genres = [
   ["soul", "Soul"], ["gospel", "Gospel"], ["rnb", "R&B"], ["pop", "Pop"],
   ["jazz", "Jazz"], ["ambient", "Ambient"], ["cinematic", "Cinematic"],
@@ -64,10 +66,15 @@ export function GenerationStudio() {
   const [pollError, setPollError] = useState("");
   const [pollVersion, setPollVersion] = useState(0);
   const [audioError, setAudioError] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteMessage, setDeleteMessage] = useState("");
+  const deleteLock = useRef(false);
+  const deletedIds = useRef(new Set<string>());
   const submitLock = useRef(false);
   const audio = useRef<HTMLAudioElement>(null);
 
   const recordJob = useCallback((job: GenerationJob) => {
+    if (deletedIds.current.has(job.id)) return;
     setJobs(previous => [job, ...previous.filter(item => item.id !== job.id)].slice(0, 20));
     setSelected(previous => previous?.id === job.id ? job : previous);
   }, []);
@@ -81,7 +88,7 @@ export function GenerationStudio() {
       const result = await requestJson<Availability>("/api/generation", { signal });
       if (signal?.aborted) return;
       setAvailability(result);
-      const incoming = (result.jobs ?? []).filter(isJob);
+      const incoming = (result.jobs ?? []).filter(isJob).filter(job => !deletedIds.current.has(job.id));
       setJobs(incoming);
       let remembered: string | null = null;
       try { remembered = sessionStorage.getItem(rememberedTrack); } catch { /* Optional browser persistence. */ }
@@ -161,8 +168,28 @@ export function GenerationStudio() {
     void submit({ id: crypto.randomUUID(), moment: moment.trim(), genre, kind, duration });
   }
 
+  async function deleteTrack(job: GenerationJob) {
+    if (deleteLock.current || active(job)) return;
+    if (!window.confirm("Permanently delete this generated track and remove it from your playlists? Download it first if you want to keep a copy.")) return;
+    deleteLock.current = true;
+    setDeleting(job.id); setDeleteMessage("");
+    try {
+      const result = await requestJson<{ deleted: boolean; playlistsUpdated: boolean }>(`/api/generation/${job.id}`, { method: "DELETE" });
+      if (result.deleted !== true) throw new Error("The server did not confirm deletion. Please try again.");
+      deletedIds.current.add(job.id);
+      if (selected?.id === job.id) audio.current?.pause();
+      setJobs(previous => previous.filter(item => item.id !== job.id));
+      setSelected(previous => previous?.id === job.id ? null : previous);
+      try { if (sessionStorage.getItem(rememberedTrack) === job.id) sessionStorage.removeItem(rememberedTrack); } catch { /* Optional browser persistence. */ }
+      setDeleteMessage(result.playlistsUpdated ? "Track deleted." : "Track deleted. If it still appears in a playlist, remove that playlist entry.");
+      notifyPlaylistsChanged();
+    } catch (reason) {
+      setDeleteMessage(reason instanceof Error ? reason.message : "The track could not be deleted. Please try again.");
+    } finally { deleteLock.current = false; setDeleting(null); }
+  }
+
   const hasActive = jobs.some(active);
-  const formDisabled = submitting || Boolean(pending) || hasActive;
+  const formDisabled = submitting || Boolean(pending) || hasActive || Boolean(deleting);
   const genreName = (value: string) => genres.find(([id]) => id === value)?.[1] ?? value;
   const kindName = (value: TrackKind) => kinds.find(item => item.value === value)?.label ?? value;
 
@@ -211,6 +238,7 @@ export function GenerationStudio() {
         <button type="button" className="secondary" onClick={() => void submit(pending)}>Retry this same request</button></div>}
     </section>
 
+    {deleteMessage && <p role="status" className="notice">{deleteMessage}</p>}
     {selected && <section className="panel generation-result" aria-labelledby={`${formId}-result`}>
       <div className="generation-panel-heading"><span className="eyebrow">Created for your moment</span>
         <span className={`generation-job-status status-${selected.status}`}>{labels[selected.status]}</span></div>
@@ -230,16 +258,26 @@ export function GenerationStudio() {
           src={`/api/generation/${selected.id}/audio`} onError={() => setAudioError("The audio couldn’t load. Refresh the page to reconnect, then try Play again.")}
           onPlay={() => document.querySelectorAll("audio").forEach(other => { if (other !== audio.current) other.pause(); })} />
         <a className="generation-download" href={`/api/generation/${selected.id}/audio`} download={`evolution-media-${selected.id}.mp3`}>Download your track</a>
+        <AddToPlaylist source="generated" trackId={selected.id} title={`${kindName(selected.kind)} · ${genreName(selected.genre)} — ${selected.moment}`.slice(0, 160)} />
         {audioError && <p role="alert" className="notice">{audioError}</p>}
+      </div>}
+      {!active(selected) && <div className="generation-actions generation-delete-actions">
+        <button type="button" className="secondary danger-action" disabled={Boolean(deleting) || !availability?.canDelete} onClick={() => void deleteTrack(selected)}>
+          {deleting === selected.id ? "Deleting track…" : "Delete track"}
+        </button>
+        {!availability?.canDelete && <p>Your music server needs the latest update to enable deletion. <a href="https://github.com/HDLife444/evolutionmedia-generator/blob/main/docs/lambda-setup.md" target="_blank" rel="noreferrer">Update instructions</a></p>}
       </div>}
     </section>}
 
     {jobs.length > 0 && <section className="generation-history" aria-labelledby={`${formId}-history`}><h2 id={`${formId}-history`}>Your recent creations</h2>
       <ul>{jobs.map(job => <li key={job.id}><button type="button" className={`secondary generation-history-item ${selected?.id === job.id ? "selected" : ""}`}
-        aria-pressed={selected?.id === job.id} onClick={() => { updateJob(job); setPollError(""); }}>
+        disabled={Boolean(deleting)} aria-pressed={selected?.id === job.id} onClick={() => { updateJob(job); setPollError(""); }}>
         <span><strong>{kindName(job.kind)} · {genreName(job.genre)}</strong><small>{job.moment}</small></span>
         <span className="generation-history-status">{labels[job.status]}</span>
-      </button></li>)}</ul>
+      </button>{!active(job) && <button type="button" className="secondary danger-action generation-history-delete" disabled={Boolean(deleting) || !availability?.canDelete}
+        onClick={() => void deleteTrack(job)} aria-label={`Delete ${kindName(job.kind)}: ${job.moment}`}>
+        {deleting === job.id ? "Deleting…" : "Delete"}
+      </button>}</li>)}</ul>
     </section>}
   </div>;
 }

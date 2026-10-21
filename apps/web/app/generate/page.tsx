@@ -11,7 +11,7 @@ export default async function GeneratePage() {
 
   return <main className="generation-page">
     <header><Link className="brand" href="/">Evolution Media</Link>
-      <nav className="generation-nav" aria-label="Generator navigation"><Link href="/">Home</Link><Link href="/admin">Admin</Link></nav>
+      <nav className="generation-nav" aria-label="Your music"><Link href="/#find-music">Find songs</Link><Link href="/playlists">My playlists</Link>{administrator === true && <Link href="/admin">Manage collection</Link>}</nav>
     </header>
     <section className="intro generation-intro">
       <span className="eyebrow">Evolution Media Generator · Administrator preview</span>

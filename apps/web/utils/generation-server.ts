@@ -25,10 +25,10 @@ export async function workerConnection(owner: string): Promise<WorkerConnection 
     return parseWorkerConnection(parsed);
   } catch { return null; }
 }
-export async function workerFetch(connection: WorkerConnection, path: string, options?: { json?: unknown; timeout?: number }) {
+export async function workerFetch(connection: WorkerConnection, path: string, options?: { json?: unknown; timeout?: number; method?: "GET" | "POST" | "DELETE" }) {
   // Only server-generated fixed paths are accepted, never arbitrary client URLs.
   return fetch(connection.url + path, {
-    method: options?.json === undefined ? "GET" : "POST", redirect: "error", cache: "no-store",
+    method: options?.method ?? (options?.json === undefined ? "GET" : "POST"), redirect: "error", cache: "no-store",
     headers: { Authorization: `Bearer ${connection.key}`, ...(options?.json === undefined ? {} : { "Content-Type": "application/json" }) },
     body: options?.json === undefined ? undefined : JSON.stringify(options.json),
     signal: AbortSignal.timeout(options?.timeout ?? 10_000),

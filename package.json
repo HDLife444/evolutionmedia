@@ -13,6 +13,8 @@
     "test:ingestion": "npm run test:ingestion --workspace @evolution-media/web",
     "check:connection": "node --env-file-if-exists=apps/web/.env.local scripts/check-supabase.mjs",
     "test:moments": "npm run test:moments --workspace @evolution-media/web",
-    "test:generation": "npm run test:generation --workspace @evolution-media/web"
+    "test:generation": "npm run test:generation --workspace @evolution-media/web",
+    "test:playlists": "npm run test:playlists --workspace @evolution-media/web",
+    "test:catalog": "npm run test:catalog --workspace @evolution-media/web"
   }
 }

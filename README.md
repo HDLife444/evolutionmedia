@@ -13,8 +13,8 @@ Initial schema for The Collective Music Intelligence Architecture.
 8. Build a Vercel dashboard showing catalog, song detail, retrieval tests, and lineage.
 
 ## Security
-RLS is enabled on every table. Only SELECT policies exist.
-Writes must use a trusted backend with explicit authorization and auditing.
+RLS is enabled on every table. Catalog writes use authorized backend functions.
+Private playlist writes are restricted to their owner by RLS and database triggers.
 Private songs remain indexed but excluded from collective retrieval.
 Never expose a Supabase service key in a Vercel client.
 The collective-access default must be disclosed and agreed to before upload.
@@ -48,6 +48,7 @@ do not rerun the creation migration against the existing tables.
 - [Activate the public collective landing page](docs/public-collective.md)
 - [Listener moment search and relevance checks](docs/listener-moments.md)
 - [Private music generation preview](docs/generation-preview.md)
+- [Private playlists, title search, and track deletion](docs/private-playlists.md)
 
 ## Run the web app
 
