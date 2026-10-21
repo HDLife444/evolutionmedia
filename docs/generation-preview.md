@@ -1,3 +1,5 @@
+> Historical temporary connection. For new generation, use [Permanent private music server](persistent-music-server.md). New requests are fixed at four minutes; the old duration choices and browser connection form below are retired.
+
 # Private site generation preview
 
 The web interface is `/generate`, linked from the landing page and Admin. It

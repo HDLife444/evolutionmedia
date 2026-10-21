@@ -1,5 +1,6 @@
 import { generationAdministrator, generationFailure, privateHeaders, workerConnection, workerFetch } from "@/utils/generation-server";
 import { validGenerationId } from "@/utils/generation";
+import { cloudMusicConfigured, cloudRecording, MUSIC_BUCKET, musicPath, musicService } from "@/utils/music-cloud";
 export const runtime = "nodejs";
 export const maxDuration = 30;
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -7,6 +8,19 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!validGenerationId(id)) return generationFailure("Track not found.", 404);
   const auth = await generationAdministrator();
   if (auth.error) return auth.error;
+  if (cloudMusicConfigured()) {
+    try {
+      const job = await cloudRecording(auth.owner, id);
+      if (job) {
+        if (job.status !== "completed" || job.audio_path !== musicPath(auth.owner, id)) return generationFailure("This recording is not available yet.", 404);
+        const download = new URL(request.url).searchParams.get("download") === "1";
+        const { data, error } = await musicService().storage.from(MUSIC_BUCKET).createSignedUrl(job.audio_path, 600,
+          download ? { download: `evolution-media-${id}.mp3` } : undefined);
+        if (error || !data?.signedUrl) return generationFailure("The recording could not be loaded from private storage.", 503);
+        return new Response(null, { status: 307, headers: { ...privateHeaders, Location: data.signedUrl, "Referrer-Policy": "no-referrer" } });
+      }
+    } catch { return generationFailure("Private recording storage is temporarily unavailable.", 503); }
+  }
   const connection = await workerConnection(auth.owner);
   if (!connection) return generationFailure("Reconnect your music server to listen.", 503);
   try {

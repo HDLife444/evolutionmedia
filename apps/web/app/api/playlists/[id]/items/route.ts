@@ -2,6 +2,7 @@ import { sameOriginRequest, smallJson, validGenerationId } from "@/utils/generat
 import { workerConnection, workerJson } from "@/utils/generation-server";
 import { playlistItem, playlistTrack, type PlaylistTrackInput } from "@/utils/playlists";
 import { playlistDatabaseFailure, playlistFailure, playlistItemFields, playlistReply, playlistUser } from "@/utils/playlist-server";
+import { cloudMusicConfigured, cloudRecording } from "@/utils/music-cloud";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!sameOriginRequest(request)) return playlistFailure("Please save tracks from the Evolution Media site.", 403);
@@ -24,11 +25,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       if (!song) return playlistFailure("This song is not available to your account.", 404);
       title = Array.from(String(song.title)).slice(0, 160).join("");
     } else {
-      const connection = await workerConnection(auth.owner);
-      if (!connection) return playlistFailure("Connect your music server before saving a generated track.", 503);
-      const result = await workerJson(connection, `/v1/jobs/${input.trackId}?owner_id=${encodeURIComponent(auth.owner)}`);
-      if (!result.ok) return playlistFailure(result.status === 404 ? "This generated track is not available to your account." : "We couldn’t check this generated track. Please try again.", result.status === 404 ? 404 : 503);
-      if (result.data?.id !== input.trackId || result.data?.status !== "completed") return playlistFailure("Wait for the generated track to finish before saving it.", 409);
+      const stored = cloudMusicConfigured() ? await cloudRecording(auth.owner, input.trackId) : null;
+      if (stored) {
+        if (stored.status !== "completed") return playlistFailure("Wait for this recording to finish before saving it.", 409);
+      } else {
+        const connection = await workerConnection(auth.owner);
+        if (!connection) return playlistFailure("Connect your music server before saving a generated track.", 503);
+        const result = await workerJson(connection, `/v1/jobs/${input.trackId}?owner_id=${encodeURIComponent(auth.owner)}`);
+        if (!result.ok) return playlistFailure(result.status === 404 ? "This generated track is not available to your account." : "We couldn’t check this generated track. Please try again.", result.status === 404 ? 404 : 503);
+        if (result.data?.id !== input.trackId || result.data?.status !== "completed") return playlistFailure("Wait for the generated track to finish before saving it.", 409);
+      }
     }
     const sourceField = input.source === "catalog" ? "song_id" : "generation_id";
     const existingQuery = () => auth.client.from("playlist_items").select(playlistItemFields)

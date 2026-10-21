@@ -77,7 +77,7 @@ function PlaylistTracks({ items, busy, onRemove }: { items: PlaylistItem[]; busy
       <div className="playlist-actions"><button type="button" className="secondary" disabled={loading} onClick={() => void play(item)} aria-label={`Play ${item.title}`}>Play</button>
         <button type="button" className="secondary" disabled={busy} onClick={() => onRemove(item)} aria-label={`Remove ${item.title} from playlist`}>Remove</button></div>
     </li>)}</ol>
-    {items.some(item => item.source === "generated") && <p className="playlist-note">Custom tracks play while your music server is connected. Deleting a custom track also removes its audio; saving it to a playlist doesn’t make a separate copy.</p>}
+    {items.some(item => item.source === "generated") && <p className="playlist-note">Recordings saved to your account remain available when the generation server is offline. Deleting a custom track also removes it from your playlists.</p>}
   </>;
 }
 

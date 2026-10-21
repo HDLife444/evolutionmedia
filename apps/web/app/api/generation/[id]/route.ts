@@ -1,12 +1,20 @@
 import { generationAdministrator, generationFailure, privateHeaders, workerConnection, workerFetch, workerJson } from "@/utils/generation-server";
 import { publicJob, sameOriginRequest, validGenerationId } from "@/utils/generation";
 import { removeGeneratedPlaylistReferences } from "@/utils/playlist-server";
+import { cloudMusicConfigured, cloudRecording, MUSIC_BUCKET, musicDatabaseFailure, musicPath, musicService } from "@/utils/music-cloud";
+import { createClient } from "@/utils/supabase/server";
 export const runtime = "nodejs";
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!validGenerationId(id)) return generationFailure("Track not found.", 404);
   const auth = await generationAdministrator();
   if (auth.error) return auth.error;
+  if (cloudMusicConfigured()) {
+    try {
+      const job = await cloudRecording(auth.owner, id);
+      if (job) return Response.json({ job: publicJob(job, id) }, { headers: privateHeaders });
+    } catch { return generationFailure("The recording status is unavailable. Please try again.", 503); }
+  }
   const connection = await workerConnection(auth.owner);
   if (!connection) return generationFailure("Reconnect your music server to check this track.", 503);
   try {
@@ -22,6 +30,20 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   if (!validGenerationId(id)) return generationFailure("Track not found.", 404);
   const auth = await generationAdministrator();
   if (auth.error) return auth.error;
+  if (cloudMusicConfigured()) {
+    try {
+      const job = await cloudRecording(auth.owner, id);
+      if (job && ["queued", "running", "importing"].includes(job.status)) return generationFailure("Wait for this track to finish before deleting it.", 409);
+      if (job) {
+        const { error } = await musicService().storage.from(MUSIC_BUCKET).remove([musicPath(auth.owner, id)]);
+        if (error) return generationFailure("The recording could not be removed from private storage. Please try again.", 503);
+      }
+      const client = await createClient();
+      const { data, error } = await client.rpc("delete_music_recording", { p_id: id });
+      if (error) return musicDatabaseFailure(error);
+      if (data === true) return Response.json({ deleted: true, playlistsUpdated: true }, { headers: privateHeaders });
+    } catch { return generationFailure("The deletion reply was interrupted. It is safe to try again.", 503); }
+  }
   const connection = await workerConnection(auth.owner);
   if (!connection) return generationFailure("Reconnect your music server to delete this track.", 503);
   try {

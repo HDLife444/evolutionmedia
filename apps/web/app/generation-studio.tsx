@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { AddToPlaylist } from "./add-to-playlist";
 import { notifyPlaylistsChanged } from "@/utils/playlist-events";
+import { TRACK_DURATION_SECONDS } from "@/utils/generation";
 
 type TrackKind = "vocal" | "instrumental" | "soundscape";
 type TrackStatus = "queued" | "running" | "completed" | "failed";
@@ -55,7 +56,6 @@ export function GenerationStudio() {
   const [moment, setMoment] = useState("");
   const [genre, setGenre] = useState("soul");
   const [kind, setKind] = useState<TrackKind>("instrumental");
-  const [duration, setDuration] = useState(30);
   const [availability, setAvailability] = useState<Availability | null>(null);
   const [checking, setChecking] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -165,7 +165,7 @@ export function GenerationStudio() {
   function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!moment.trim() || pending) return;
-    void submit({ id: crypto.randomUUID(), moment: moment.trim(), genre, kind, duration });
+    void submit({ id: crypto.randomUUID(), moment: moment.trim(), genre, kind, duration: TRACK_DURATION_SECONDS });
   }
 
   async function deleteTrack(job: GenerationJob) {
@@ -202,7 +202,7 @@ export function GenerationStudio() {
       </div>
       {availability && !availability.ready && <div className="notice generation-setup">
         <p>{availability.message ?? "Connect your generation server to begin creating tracks from the site."}</p>
-        <div className="generation-actions"><Link href="/generate/connect">Connect generation server</Link>
+        <div className="generation-actions"><Link href="/generate/connect">Music server setup</Link>
           <button type="button" className="secondary" disabled={checking} onClick={() => void checkConnection()}>Check connection</button></div>
       </div>}
       <form className="upload-form" onSubmit={create}>
@@ -222,11 +222,8 @@ export function GenerationStudio() {
             <select id={`${formId}-genre`} value={genre} onChange={event => setGenre(event.target.value)}>
               {genres.map(([value, name]) => <option key={value} value={value}>{name}</option>)}
             </select></div>
-            <div><label htmlFor={`${formId}-duration`}>Track length</label>
-              <select id={`${formId}-duration`} value={duration} onChange={event => setDuration(Number(event.target.value))}>
-                {[30, 60, 90, 120].map(seconds => <option key={seconds} value={seconds}>{seconds} seconds</option>)}
-              </select></div>
           </div>
+          <p className="generation-note">Every new recording is a full-length four-minute composition, with space for phrasing, development, and emotional context.</p>
           <p className="generation-note" id={`${formId}-privacy`}>This administrator preview creates one track at a time. Your request and generated audio stay private to your account.</p>
           <button className="generation-create" type="submit" disabled={!availability?.ready || !moment.trim()}>
             {submitting ? "Submitting your moment…" : hasActive ? "A track is being created…" : "Generate my track"}
@@ -257,7 +254,7 @@ export function GenerationStudio() {
         <audio key={selected.id} ref={audio} controls preload="none" aria-label="Your generated track"
           src={`/api/generation/${selected.id}/audio`} onError={() => setAudioError("The audio couldn’t load. Refresh the page to reconnect, then try Play again.")}
           onPlay={() => document.querySelectorAll("audio").forEach(other => { if (other !== audio.current) other.pause(); })} />
-        <a className="generation-download" href={`/api/generation/${selected.id}/audio`} download={`evolution-media-${selected.id}.mp3`}>Download your track</a>
+        <a className="generation-download" href={`/api/generation/${selected.id}/audio?download=1`} download={`evolution-media-${selected.id}.mp3`}>Download your track</a>
         <AddToPlaylist source="generated" trackId={selected.id} title={`${kindName(selected.kind)} · ${genreName(selected.genre)} — ${selected.moment}`.slice(0, 160)} />
         {audioError && <p role="alert" className="notice">{audioError}</p>}
       </div>}
@@ -265,7 +262,7 @@ export function GenerationStudio() {
         <button type="button" className="secondary danger-action" disabled={Boolean(deleting) || !availability?.canDelete} onClick={() => void deleteTrack(selected)}>
           {deleting === selected.id ? "Deleting track…" : "Delete track"}
         </button>
-        {!availability?.canDelete && <p>Your music server needs the latest update to enable deletion. <a href="https://github.com/HDLife444/evolutionmedia-generator/blob/main/docs/lambda-setup.md" target="_blank" rel="noreferrer">Update instructions</a></p>}
+        {!availability?.canDelete && <p>Your music server needs the latest update to enable deletion. <a href="https://github.com/HDLife444/evolutionmedia-generator/blob/main/docs/permanent-server.md" target="_blank" rel="noreferrer">Update instructions</a></p>}
       </div>}
     </section>}
 

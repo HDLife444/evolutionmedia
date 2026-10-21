@@ -32,4 +32,5 @@ run_sql "$project_root/tests/database/permissions.sql"
 run_sql "$project_root/tests/database/ingestion.sql"
 run_sql "$project_root/tests/database/indexing.sql"
 run_sql "$project_root/tests/database/playlists.sql"
+run_sql "$project_root/tests/database/music-server.sql"
 echo 'Database migration and permission checks passed.'

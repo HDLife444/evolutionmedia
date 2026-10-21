@@ -10,7 +10,7 @@
     "test:auth": "tsx --test tests/session.test.ts",
     "test:ingestion": "tsx --test tests/ingestion.test.ts tests/text-embeddings.test.ts",
     "test:moments": "tsx --test tests/moment-search.test.ts",
-    "test:generation": "tsx --test tests/generation.test.ts",
+    "test:generation": "tsx --test tests/generation.test.ts tests/music-cloud.test.ts",
     "test:playlists": "tsx --test tests/playlists.test.ts",
     "test:catalog": "tsx --test tests/catalog-search.test.ts"
   },

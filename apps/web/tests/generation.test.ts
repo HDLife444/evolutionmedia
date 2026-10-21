@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { validGenerationInput, parseWorkerConnection, publicJob, sameOriginRequest, smallJson } from "../utils/generation";
 const id = "a7ae1234-1234-4234-a123-123456789abc";
-const request = { id, moment: "I want a hopeful start to my day.", genre: "soul", kind: "instrumental", duration: 30 };
+const request = { id, moment: "I want a hopeful start to my day.", genre: "soul", kind: "instrumental", duration: 240 };
 
 test("generation request accepts supported choices and rejects invalid or unbounded jobs", () => {
   assert.ok(validGenerationInput(request));
-  for (const change of [{ id: "../secret" }, { moment: " " }, { moment: "a".repeat(501) }, { duration: 600 }, { genre: "unknown" }, { kind: "cover" }]) {
+  for (const change of [{ id: "../secret" }, { moment: " " }, { moment: "a".repeat(501) }, ...[30,60,90,120,180,600].map(duration => ({ duration })), { genre: "unknown" }, { kind: "cover" }]) {
     assert.equal(validGenerationInput({ ...request, ...change }), false);
   }
-  assert.ok(validGenerationInput({ ...request, kind: "vocal", genre: "hip-hop", duration: 120 }));
+  assert.ok(validGenerationInput({ ...request, kind: "vocal", genre: "hip-hop", duration: 240 }));
 });
 
 test("connection URLs prevent private-network, arbitrary-host, credential, path, and redirect targets", () => {

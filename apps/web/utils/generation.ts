@@ -1,15 +1,16 @@
 export const GENERATION_GENRES = ["soul", "gospel", "rnb", "pop", "jazz", "ambient", "cinematic", "electronic", "rock", "hip-hop", "classical", "country"] as const;
 export const GENERATION_KINDS = ["vocal", "instrumental", "soundscape"] as const;
+export const TRACK_DURATION_SECONDS = 240 as const;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const validGenerationId = (value: unknown): value is string => typeof value === "string" && uuid.test(value);
-export type GenerationInput = { id: string; moment: string; genre: typeof GENERATION_GENRES[number]; kind: typeof GENERATION_KINDS[number]; duration: 30 | 60 | 90 | 120 };
+export type GenerationInput = { id: string; moment: string; genre: typeof GENERATION_GENRES[number]; kind: typeof GENERATION_KINDS[number]; duration: typeof TRACK_DURATION_SECONDS };
 export type WorkerConnection = { url: string; key: string };
 export function validGenerationInput(value: unknown): value is GenerationInput {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
   return validGenerationId(v.id) && typeof v.moment === "string" && v.moment.trim().length > 0
     && Array.from(v.moment).length <= 500 && GENERATION_GENRES.includes(v.genre as GenerationInput["genre"])
-    && GENERATION_KINDS.includes(v.kind as GenerationInput["kind"]) && [30,60,90,120].includes(v.duration as number);
+    && GENERATION_KINDS.includes(v.kind as GenerationInput["kind"]) && v.duration === TRACK_DURATION_SECONDS;
 }
 export function parseWorkerConnection(value: unknown): WorkerConnection | null {
   if (!value || typeof value !== "object") return null;
@@ -50,7 +51,7 @@ export function publicJob(value: unknown, expectedId?: string) {
   // Return only the owner-scoped presentation fields, never server paths/keys.
   return { id: v.id, status: v.status, moment: typeof v.moment === "string" ? v.moment : "",
     kind: typeof v.kind === "string" ? v.kind : "instrumental", genre: typeof v.genre === "string" ? v.genre : "",
-    duration: typeof v.duration === "number" ? v.duration : 30,
+    duration: typeof v.duration === "number" ? v.duration : TRACK_DURATION_SECONDS,
     created_at: typeof v.created_at === "string" ? v.created_at : typeof v.created_at === "number" && Number.isFinite(v.created_at) ? new Date(v.created_at * 1000).toISOString() : "",
     lyrics: typeof v.lyrics === "string" ? v.lyrics : undefined,
     progress: typeof v.progress === "string" ? v.progress : undefined,

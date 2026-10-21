@@ -81,3 +81,10 @@ cascades, preserving original songs, and both capacity limits.
 The private worker has separate authorization, deletion, rate-limit, upgrade,
 and filesystem confinement tests. Hosted playlist storage and GPU deletion
 require the one-time migration and worker update above.
+
+## Persistent generated recordings
+
+After [permanent music server setup](persistent-music-server.md), generated audio
+is stored privately in Supabase and can play from playlists while the GPU is
+offline. Existing completed test tracks are imported under the same identifiers.
+New generation stays administrator-only and requests four minutes.

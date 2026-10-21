@@ -47,7 +47,8 @@ do not rerun the creation migration against the existing tables.
 - [Activate text indexing and semantic search](docs/text-indexing.md)
 - [Activate the public collective landing page](docs/public-collective.md)
 - [Listener moment search and relevance checks](docs/listener-moments.md)
-- [Private music generation preview](docs/generation-preview.md)
+- [Permanent private music server](docs/persistent-music-server.md)
+- [Earlier music generation preview](docs/generation-preview.md)
 - [Private playlists, title search, and track deletion](docs/private-playlists.md)
 
 ## Run the web app
